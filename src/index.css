@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-sans: "DM Sans", system-ui, sans-serif;
@@ -10,6 +12,18 @@
   html {
     font-family: var(--font-sans);
     scroll-behavior: smooth;
+    transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html.dark {
+    color-scheme: dark;
+    background-color: #090d16;
+    color: #e2e8f0;
+  }
+
+  html.dark body {
+    background-color: #090d16;
+    color: #e2e8f0;
   }
 
   h1, h2, h3, h4 {
@@ -19,6 +33,160 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+}
+
+/* ── MODO OSCURO PREMIUM (ESTILO APPLE / LINEAR / SPOTIFY) ───────── */
+html.dark {
+  /* Superficies principales y fondos */
+  .bg-slate-50,
+  .bg-slate-50\/50,
+  .bg-slate-50\/60,
+  .bg-slate-50\/80 {
+    background-color: #090d16 !important;
+  }
+
+  .bg-white {
+    background-color: #0f172a !important;
+  }
+
+  .bg-white\/80,
+  .bg-white\/85,
+  .bg-white\/90,
+  .bg-white\/95 {
+    background-color: rgba(15, 23, 42, 0.88) !important;
+  }
+
+  .bg-slate-100,
+  .bg-slate-100\/80 {
+    background-color: #1e293b !important;
+  }
+
+  .bg-slate-200 {
+    background-color: #334155 !important;
+  }
+
+  /* Bordes sutiles y elegantes */
+  .border-slate-100,
+  .border-slate-200,
+  .border-slate-200\/60,
+  .border-slate-200\/80,
+  .border-slate-200\/90 {
+    border-color: #1e293b !important;
+  }
+
+  .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+  .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: #1e293b !important;
+  }
+
+  /* Tipografías en alto contraste legible */
+  .text-slate-900,
+  .text-slate-800 {
+    color: #f8fafc !important;
+  }
+
+  .text-slate-700 {
+    color: #e2e8f0 !important;
+  }
+
+  .text-slate-600 {
+    color: #cbd5e1 !important;
+  }
+
+  .text-slate-500 {
+    color: #94a3b8 !important;
+  }
+
+  .text-slate-400 {
+    color: #64748b !important;
+  }
+
+  /* Entradas de formulario e inputs */
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #64748b !important;
+  }
+
+  /* Hover states */
+  .hover\:bg-slate-50:hover {
+    background-color: #1e293b !important;
+  }
+
+  .hover\:bg-slate-100:hover {
+    background-color: #1e293b !important;
+  }
+
+  .hover\:bg-slate-200:hover {
+    background-color: #334155 !important;
+  }
+
+  .hover\:text-slate-900:hover {
+    color: #ffffff !important;
+  }
+
+  /* Sombras oscuras con profundidad */
+  .shadow-sm,
+  .shadow,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl {
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+  }
+
+  /* Tarjetas con glow sutil teal */
+  .border-teal-200,
+  .border-teal-300 {
+    border-color: rgba(20, 184, 166, 0.3) !important;
+  }
+
+  .bg-teal-50,
+  .bg-teal-50\/40,
+  .bg-teal-50\/50,
+  .bg-teal-50\/80 {
+    background-color: rgba(15, 118, 110, 0.15) !important;
+  }
+
+  .text-teal-900,
+  .text-teal-800 {
+    color: #2dd4bf !important;
+  }
+
+  .text-teal-700 {
+    color: #5eead4 !important;
+  }
+
+  /* Modales y fondos oscurecidos */
+  .bg-slate-900\/60,
+  .bg-slate-900\/50 {
+    background-color: rgba(3, 7, 18, 0.78) !important;
+  }
+}
+
+/* Scrollbars personalizados para tema oscuro */
+html.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }
 
 @media print {

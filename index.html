@@ -29,6 +29,19 @@
       rel="stylesheet"
       referrerpolicy="no-referrer"
     />
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('te_escucho_theme');
+          var isDark = stored === 'dark' || (!stored && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', '#0B0F17');
+          }
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body class="bg-slate-50 text-slate-800 antialiased selection:bg-teal-100 selection:text-teal-900">
     <div id="root"></div>

@@ -15,6 +15,7 @@ import {
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { SplashIntro } from './components/SplashIntro';
 import { StudentPortal } from './components/StudentPortal';
+import { ThemeToggle } from './components/ThemeToggle';
 import type { CounselorProfile, PlatformAdminProfile } from './types';
 
 type AppMode =
@@ -377,6 +378,7 @@ export default function App() {
         />
       )}
 
+      <ThemeToggle />
       <OfflineIndicator />
     </>
   );
