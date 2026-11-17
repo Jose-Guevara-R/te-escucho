@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: te-escucho
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: BREAK_GLASS_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ENABLE_DEMO_ACCESS
+        value: "true"
+      - key: PLATFORM_ADMIN_EMAIL
+        value: admin@teescucho.edu
+      - key: PLATFORM_ADMIN_PASSWORD
+        sync: false

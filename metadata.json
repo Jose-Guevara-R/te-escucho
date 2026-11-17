@@ -1,0 +1,6 @@
+{
+  "name": "Te Escucho",
+  "description": "Plataforma escolar 100% anónima y segura para prevenir el acoso escolar y la exclusión, con triaje emocional, chat en tiempo real y análisis preventivo con IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
