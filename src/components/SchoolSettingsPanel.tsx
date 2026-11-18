@@ -7,12 +7,14 @@ import {
   History,
   Loader2,
   MapPin,
+  Phone,
   Plus,
   Save,
   ShieldCheck,
   Sparkles,
   Trash2,
   UserPlus,
+  Users,
   X,
 } from 'lucide-react';
 import type {
@@ -33,9 +35,9 @@ interface SchoolSettingsPanelProps {
 }
 
 const ROLE_OPTIONS: Array<{ id: CounselorRole; label: string }> = [
-  { id: 'psychologist', label: 'Psicólogo' },
-  { id: 'tutor', label: 'Tutor' },
-  { id: 'admin', label: 'Admin Colegio' },
+  { id: 'psychologist', label: 'Coordinador/a de TOE' },
+  { id: 'tutor', label: 'Docente Tutor/a de Aula' },
+  { id: 'admin', label: 'Dirección / Administración' },
 ];
 
 export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
@@ -55,6 +57,11 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
   const [memberEmail, setMemberEmail] = useState('');
   const [memberPass, setMemberPass] = useState('');
   const [memberRole, setMemberRole] = useState<CounselorRole>('psychologist');
+  const [memberPhone, setMemberPhone] = useState('');
+  const [memberShift, setMemberShift] = useState<'manana' | 'tarde' | 'completo'>('manana');
+  const [memberGrade, setMemberGrade] = useState('');
+  const [memberSection, setMemberSection] = useState('');
+  const [memberRespLabel, setMemberRespLabel] = useState('');
   const [addingMember, setAddingMember] = useState(false);
 
   // Espacio Inspira school curation
@@ -200,6 +207,11 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
           email: memberEmail,
           password: memberPass,
           role: memberRole,
+          phone_whatsapp: memberPhone || undefined,
+          shift: memberShift,
+          grade: memberGrade || undefined,
+          section: memberSection || undefined,
+          responsabilidad_label: memberRespLabel || undefined,
         }),
       });
       const data = await res.json();
@@ -207,6 +219,11 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
       setMemberName('');
       setMemberEmail('');
       setMemberPass('');
+      setMemberPhone('');
+      setMemberShift('manana');
+      setMemberGrade('');
+      setMemberSection('');
+      setMemberRespLabel('');
       await loadConfig();
       showSuccess(`Cuenta creada para ${data.counselor.full_name}.`);
     } catch (err) {
@@ -618,15 +635,30 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
                 <p className="text-xs text-slate-500">
                   <span className="font-mono">{member.email}</span> ·{' '}
                   {member.role === 'admin'
-                    ? 'Admin Colegio'
+                    ? 'Dirección / Admin'
                     : member.role === 'psychologist'
-                      ? 'Psicólogo'
-                      : 'Tutor'}{' '}
+                      ? 'Coordinador/a TOE'
+                      : 'Tutor/a'}{' '}
                   ·{' '}
                   <span className={member.active ? 'text-emerald-700' : 'text-rose-700'}>
                     {member.active ? 'Activo' : 'Desactivado'}
                   </span>
                 </p>
+                {(member.responsabilidad_label || member.shift || member.grade) && (
+                  <p className="text-[11px] text-teal-700 font-medium mt-0.5 flex items-center gap-1.5">
+                    <Users className="w-3 h-3 shrink-0" />
+                    <span>{member.responsabilidad_label || ''}</span>
+                    <span>{member.shift === 'manana' ? '· Turno Mañana' : member.shift === 'tarde' ? '· Turno Tarde' : member.shift === 'completo' ? '· Ambos Turnos' : ''}</span>
+                    {member.grade && <span>· {member.grade}{member.section ? member.section : ''}</span>}
+                  </p>
+                )}
+                {member.phone_whatsapp && (
+                  <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
+                    <span className="font-mono">{member.phone_whatsapp.replace(/(\d{2})(\d+)(\d{3})/, '$1 *** $3')}</span>
+                    <span className="text-emerald-700 font-medium">WhatsApp ✓</span>
+                  </p>
+                )}
               </div>
 
               {member.id !== currentCounselorId && (
@@ -655,7 +687,7 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
         <form onSubmit={handleAddMember} className="pt-4 border-t border-slate-100 space-y-3">
           <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
             <UserPlus className="w-4 h-4 text-teal-700" />
-            Agregar psicólogo o tutor a tu plantel
+            Agregar miembro del equipo TOE / Tutoría a tu plantel
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
@@ -688,10 +720,47 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
               onChange={(e) => setMemberRole(e.target.value as CounselorRole)}
               className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs"
             >
-              <option value="psychologist">Psicólogo</option>
-              <option value="tutor">Tutor</option>
-              <option value="admin">Administrador de colegio</option>
+              <option value="psychologist">Coordinador/a de TOE</option>
+              <option value="tutor">Docente Tutor/a de Aula</option>
+              <option value="admin">Dirección / Administración</option>
             </select>
+            <select
+              value={memberShift}
+              onChange={(e) => setMemberShift(e.target.value as 'manana' | 'tarde' | 'completo')}
+              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs"
+            >
+              <option value="manana">Turno Mañana</option>
+              <option value="tarde">Turno Tarde</option>
+              <option value="completo">Completo / Ambos Turnos</option>
+            </select>
+            <input
+              type="text"
+              value={memberPhone}
+              onChange={(e) => setMemberPhone(e.target.value)}
+              placeholder="WhatsApp: +51 9XX XXX XXX (opcional)"
+              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono"
+            />
+            <input
+              type="text"
+              value={memberGrade}
+              onChange={(e) => setMemberGrade(e.target.value)}
+              placeholder="Grado (ej: 3°) — tutores"
+              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs"
+            />
+            <input
+              type="text"
+              value={memberSection}
+              onChange={(e) => setMemberSection(e.target.value)}
+              placeholder="Sección (ej: A, B) — tutores"
+              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs"
+            />
+            <input
+              type="text"
+              value={memberRespLabel}
+              onChange={(e) => setMemberRespLabel(e.target.value)}
+              placeholder="Etiqueta institucional (opcional, ej: Coordinadora TOE Turno Mañana)"
+              className="sm:col-span-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs"
+            />
           </div>
           <button
             type="submit"

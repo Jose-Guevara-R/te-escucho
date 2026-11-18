@@ -7,6 +7,7 @@ import { createServer as createViteServer } from 'vite';
 import * as webpush from 'web-push';
 import { analyzeStudentMessage, generateEmpathyDraft } from './server/ai.ts';
 import { db } from './server/db.ts';
+import { dispatchWhatsAppAlertAsync } from './server/whatsapp.ts';
 import {
   applySecurityHeaders,
   createZeroPiiRateLimiter,
@@ -672,6 +673,8 @@ async function startServer() {
       const userIntent =
         typeof req.body?.userIntent === 'string' ? req.body.userIntent.trim().slice(0, 30) : null;
       const isSharedDevice = Boolean(req.body?.isSharedDevice);
+      const targetCounselorId =
+        typeof req.body?.targetCounselorId === 'string' ? req.body.targetCounselorId.trim().slice(0, 80) : null;
 
       if (!schoolId || !category || !/^\d{4}$/.test(pin)) {
         res.status(400).json({ error: 'Ingresa una categoría válida y un PIN de 4 números.' });
@@ -691,6 +694,7 @@ async function startServer() {
         isSandbox: Boolean(demoAuth),
         userIntent,
         isSharedDevice,
+        targetCounselorId,
       });
       if (!created) {
         res.status(404).json({ error: 'Colegio no válido o inactivo.' });
@@ -2241,6 +2245,23 @@ async function startServer() {
       void fireEscalationWebhook(item.school, item.ticket);
       void notifyStaffForTicket(item.school, item.ticket, 'sla_escalation');
     }
+
+    // Auto-escalación WhatsApp discreta por desatención (30-45min -> TOE, 60min -> Dirección)
+    const waEscalations = db.evaluateWhatsAppEscalations();
+    for (const item of waEscalations) {
+      void dispatchWhatsAppAlertAsync({
+        recipientPhone: item.recipientPhone,
+        recipientName: item.recipientName,
+        recipientRoleLabel: item.recipientRoleLabel,
+        schoolName: item.school.name,
+        ticketCode: item.ticket.ticket_code,
+        riskLevel: item.ticket.risk_level,
+        category: item.ticket.category,
+        isEscalation: true,
+        escalationReason: item.reason,
+      });
+    }
+
     db.purgeExpiredResolvedTickets(undefined, 'Motor de Retención Automática');
   }, 60_000);
 

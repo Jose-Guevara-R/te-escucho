@@ -36,6 +36,7 @@ import type {
   InspiraTopic,
   MoodType,
   PublicSchoolConfig,
+  PublicStaffMember,
   SpaceTag,
   StudentIntent,
   StudentPaceMode,
@@ -208,6 +209,8 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
   // Ticket + PIN + Silent Protection creation state
   const [pin, setPin] = useState(['', '', '', '']);
   const [paceMode, setPaceMode] = useState<StudentPaceMode>('discreet_help');
+  const [targetCounselorId, setTargetCounselorId] = useState<string | null>(null);
+  const [showCounselorPicker, setShowCounselorPicker] = useState(false);
   const [showBreakGlassOption, setShowBreakGlassOption] = useState(false);
   const [emergencyContact, setEmergencyContact] = useState('');
   const [createdTicket, setCreatedTicket] = useState<TicketSummary | null>(null);
@@ -625,6 +628,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
           pin: fullPin,
           userIntent: selectedIntent,
           isSharedDevice,
+          targetCounselorId: targetCounselorId || undefined,
         }),
       });
       const data = await res.json();
@@ -2201,6 +2205,98 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                 )}
 
                 <form onSubmit={handleCreateTicket} className="mt-5 space-y-5">
+                  {/* Selector Adulto de Confianza — Opcional y 100% anónimo */}
+                  {verifiedSchool?.staff_directory && verifiedSchool.staff_directory.length > 0 && (
+                    <div className="bg-teal-50/70 border border-teal-200/80 rounded-2xl p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-teal-700 shrink-0" />
+                        <h2 className="text-xs font-bold text-teal-950">
+                          ¿Con quién prefieres comunicarte? (Opcional)
+                        </h2>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="flex items-start gap-2.5 p-2 rounded-xl cursor-pointer hover:bg-white/60 transition">
+                          <input
+                            type="radio"
+                            name="counselor_pick"
+                            checked={!showCounselorPicker}
+                            onChange={() => {
+                              setShowCounselorPicker(false);
+                              setTargetCounselorId(null);
+                            }}
+                            className="mt-0.5 text-teal-700"
+                          />
+                          <span className="text-xs text-slate-800 leading-snug">
+                            <strong className="text-teal-950">Coordinación General de TOE (Recomendado)</strong>
+                            <span className="block text-[11px] text-slate-500 mt-0.5">
+                              Tu caso será atendido por el orientador disponible en el turno correspondiente.
+                            </span>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-2.5 p-2 rounded-xl cursor-pointer hover:bg-white/60 transition">
+                          <input
+                            type="radio"
+                            name="counselor_pick"
+                            checked={showCounselorPicker}
+                            onChange={() => setShowCounselorPicker(true)}
+                            className="mt-0.5 text-teal-700"
+                          />
+                          <span className="text-xs text-slate-800 leading-snug">
+                            <strong className="text-teal-950">Elegir a un orientador o tutor en específico</strong>
+                            <span className="block text-[11px] text-slate-500 mt-0.5">
+                              Dirige tu mensaje directamente a tu docente de confianza.
+                            </span>
+                          </span>
+                        </label>
+                      </div>
+
+                      {showCounselorPicker && (
+                        <div className="space-y-2 pt-1 border-t border-teal-100 max-h-48 overflow-y-auto pr-1">
+                          {verifiedSchool.staff_directory.map((staff) => (
+                            <label
+                              key={staff.id}
+                              className={`flex items-start gap-2.5 p-2.5 rounded-xl border cursor-pointer text-xs transition ${
+                                targetCounselorId === staff.id
+                                  ? 'border-teal-600 bg-white ring-1 ring-teal-600 shadow-xs'
+                                  : 'border-slate-200 bg-white/80 hover:bg-white hover:border-teal-300'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="staff_member"
+                                value={staff.id}
+                                checked={targetCounselorId === staff.id}
+                                onChange={() => setTargetCounselorId(staff.id)}
+                                className="mt-0.5 text-teal-700"
+                              />
+                              <div className="min-w-0">
+                                <span className="font-semibold text-slate-900 block truncate">
+                                  {staff.full_name}
+                                </span>
+                                <span className="text-[11px] text-slate-500 block truncate">
+                                  {staff.responsabilidad_label ||
+                                    (staff.role === 'psychologist'
+                                      ? 'Coordinación TOE'
+                                      : staff.role === 'tutor'
+                                        ? `Tutor/a${staff.grade ? ` · ${staff.grade}${staff.section || ''}` : ''}`
+                                        : 'Dirección')}
+                                  {staff.shift && staff.shift !== 'completo' && (
+                                    <span> · Turno {staff.shift === 'manana' ? 'Mañana' : 'Tarde'}</span>
+                                  )}
+                                </span>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+
+                      <p className="text-[11px] text-teal-800/90 flex items-center gap-1.5 pt-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+                        <span>Tu identidad se mantiene 100% anónima. El docente solo verá tu mensaje y tu código.</span>
+                      </p>
+                    </div>
+                  )}
+
                   <div>
                     <p className="text-xs font-semibold text-slate-700 text-center mb-3">
                       Elige 4 números fáciles de recordar para ti
@@ -2356,6 +2452,16 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                     </button>
                   </div>
                 </div>
+
+                {createdTicket.target_counselor_name && (
+                  <div className="p-3 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-900 text-left flex items-center gap-2">
+                    <Users className="w-4 h-4 text-teal-700 shrink-0" />
+                    <span>
+                      Tu mensaje fue dirigido a <strong>{createdTicket.target_counselor_name}</strong>
+                      {createdTicket.target_counselor_role_label ? ` (${createdTicket.target_counselor_role_label})` : ''}.
+                    </span>
+                  </div>
+                )}
 
                 {/* Optional Camouflaged Web Push Alert vs Modo Celular Prestado */}
                 {isSharedDevice ? (

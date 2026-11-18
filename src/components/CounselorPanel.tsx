@@ -8,6 +8,7 @@ import {
   Clock,
   Compass,
   FileText,
+  HeartHandshake,
   KeyRound,
   Loader2,
   Lock,
@@ -1475,6 +1476,19 @@ export const CounselorPanel: React.FC<CounselorPanelProps> = ({
                           </p>
                         )}
 
+                        {t.target_counselor_name && (
+                          <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[10px] font-semibold text-teal-800">
+                              👤 {t.target_counselor_name}
+                            </span>
+                            {t.whatsapp_notified_at && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[9px] font-medium text-emerald-800">
+                                📱 WhatsApp
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         {Boolean(t.reopened_by_student_at) && t.status !== 'resuelto' && (
                           <div className="mt-1">
                             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-teal-100 text-teal-800 border border-teal-200">
@@ -1582,6 +1596,15 @@ export const CounselorPanel: React.FC<CounselorPanelProps> = ({
                             <span aria-hidden="true">·</span>
                             <span className="text-amber-700 font-semibold">
                               Sin orientador a cargo
+                            </span>
+                          </>
+                        )}
+                        {activeTicket.target_counselor_name && (
+                          <>
+                            <span aria-hidden="true">·</span>
+                            <span className="text-teal-800 font-semibold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                              Dirigido a: {activeTicket.target_counselor_name}
+                              {activeTicket.target_counselor_role_label ? ` (${activeTicket.target_counselor_role_label})` : ''}
                             </span>
                           </>
                         )}

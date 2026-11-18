@@ -23,10 +23,12 @@ import type {
   PlatformAdminProfile,
   PlatformCatalog,
   PublicSchoolConfig,
+  PublicStaffMember,
   RetentionConfig,
   RiskLevel,
   School,
   SchoolAnalyticsData,
+  ShiftType,
   SlaConfig,
   SlaStatus,
   SpaceTag,
@@ -61,6 +63,7 @@ import {
   verifySecretAsync,
 } from './security.ts';
 import { getSupabaseAdmin, isSupabaseConfigured } from './supabase.ts';
+import { dispatchWhatsAppAlertAsync, buildWhatsAppMessageText, buildWhatsAppClickUrl } from './whatsapp.ts';
 
 interface CounselorRecord extends CounselorProfile {
   password_hash: string;
@@ -677,18 +680,6 @@ function createInitialData(): DatabaseSchema {
 
   const counselors: CounselorRecord[] = [
     {
-      id: 'counselor-maria-1',
-      school_id: sanJoseId,
-      email: 'psicologia@colegio.edu.pe',
-      password_hash: hashSecret(defaultStaffPassword),
-      full_name: 'Lic. María Fernández',
-      role: 'psychologist',
-      active: true,
-      availability: 'available',
-      school_name: 'Colegio San José',
-      school_access_code: 'SANJOSE2026',
-    },
-    {
       id: 'counselor-admin-sj',
       school_id: sanJoseId,
       email: 'coordinacion@colegio.edu.pe',
@@ -699,6 +690,39 @@ function createInitialData(): DatabaseSchema {
       availability: 'available',
       school_name: 'Colegio San José',
       school_access_code: 'SANJOSE2026',
+      shift: 'completo',
+      phone_whatsapp: '+51 999 111 222',
+      responsabilidad_label: 'Dirección General (Comité de Bienestar)',
+    },
+    {
+      id: 'counselor-maria-1',
+      school_id: sanJoseId,
+      email: 'psicologia@colegio.edu.pe',
+      password_hash: hashSecret(defaultStaffPassword),
+      full_name: 'Lic. María Fernández',
+      role: 'psychologist',
+      active: true,
+      availability: 'available',
+      school_name: 'Colegio San José',
+      school_access_code: 'SANJOSE2026',
+      shift: 'manana',
+      phone_whatsapp: '+51 988 222 333',
+      responsabilidad_label: 'Coordinadora de Tutoría (TOE) - Turno Mañana',
+    },
+    {
+      id: 'counselor-toe-tarde',
+      school_id: sanJoseId,
+      email: 'toe.tarde@colegio.edu.pe',
+      password_hash: hashSecret(defaultStaffPassword),
+      full_name: 'Lic. Patricia Vega',
+      role: 'psychologist',
+      active: true,
+      availability: 'available',
+      school_name: 'Colegio San José',
+      school_access_code: 'SANJOSE2026',
+      shift: 'tarde',
+      phone_whatsapp: '+51 988 444 555',
+      responsabilidad_label: 'Coordinadora de Tutoría (TOE) - Turno Tarde',
     },
     {
       id: 'counselor-tutor-sj',
@@ -711,6 +735,45 @@ function createInitialData(): DatabaseSchema {
       availability: 'available',
       school_name: 'Colegio San José',
       school_access_code: 'SANJOSE2026',
+      shift: 'manana',
+      grade: '3°',
+      section: 'B',
+      phone_whatsapp: '+51 977 333 444',
+      responsabilidad_label: 'Tutora 3° "B" (Secundaria - Turno Mañana)',
+    },
+    {
+      id: 'counselor-tutor-2a',
+      school_id: sanJoseId,
+      email: 'carlos.tutor@colegio.edu.pe',
+      password_hash: hashSecret(defaultStaffPassword),
+      full_name: 'Prof. Carlos Mendoza',
+      role: 'tutor',
+      active: true,
+      availability: 'available',
+      school_name: 'Colegio San José',
+      school_access_code: 'SANJOSE2026',
+      shift: 'manana',
+      grade: '2°',
+      section: 'A',
+      phone_whatsapp: '+51 977 555 666',
+      responsabilidad_label: 'Tutor 2° "A" (Secundaria - Turno Mañana)',
+    },
+    {
+      id: 'counselor-tutor-4c',
+      school_id: sanJoseId,
+      email: 'jorge.tutor@colegio.edu.pe',
+      password_hash: hashSecret(defaultStaffPassword),
+      full_name: 'Prof. Jorge Huamán',
+      role: 'tutor',
+      active: true,
+      availability: 'available',
+      school_name: 'Colegio San José',
+      school_access_code: 'SANJOSE2026',
+      shift: 'tarde',
+      grade: '4°',
+      section: 'C',
+      phone_whatsapp: '+51 977 777 888',
+      responsabilidad_label: 'Tutor 4° "C" (Secundaria - Turno Tarde)',
     },
     {
       id: 'counselor-carlos-2',
@@ -726,6 +789,9 @@ function createInitialData(): DatabaseSchema {
       availability: 'available',
       school_name: 'Colegio Santa Rosa',
       school_access_code: 'SANTAROSA2026',
+      shift: 'completo',
+      phone_whatsapp: '+51 999 888 777',
+      responsabilidad_label: 'Dirección y Coordinación TOE',
     },
   ];
 
@@ -921,37 +987,68 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
 
   const rawCounselors = Array.isArray(raw.counselors) ? raw.counselors : [];
   const counselors: CounselorRecord[] = rawCounselors.map((c) => {
-    if (typeof c.active !== 'boolean' || !c.availability) changed = true;
+    if (typeof c.active !== 'boolean' || !c.availability || !c.phone_whatsapp || !c.shift) changed = true;
+    const phone = c.phone_whatsapp || (c.role === 'admin' ? '+51 999 111 222' : c.role === 'psychologist' ? '+51 988 222 333' : '+51 977 333 444');
+    const shift = c.shift || (c.role === 'admin' ? 'completo' : 'manana');
+    const resp = c.responsabilidad_label || (
+      c.role === 'admin' ? 'Dirección General (Comité de Bienestar)' :
+      c.role === 'tutor' ? `Tutor ${c.grade || '3°'} ${c.section || 'B'}`.trim() :
+      'Coordinación de Tutoría (TOE)'
+    );
     return {
       ...c,
       active: c.active !== false,
       availability: c.availability || 'available',
+      phone_whatsapp: phone,
+      shift,
+      grade: c.grade || (c.role === 'tutor' ? '3°' : ''),
+      section: c.section || (c.role === 'tutor' ? 'B' : ''),
+      responsabilidad_label: resp,
     };
   });
 
-  // Ensure San José has a delegated school admin account if upgrading an older DB
+  // Ensure San José has full team if upgrading
+  const defaultStaffPassword =
+    process.env.INITIAL_STAFF_PASSWORD ||
+    (process.env.NODE_ENV === 'production' ? crypto.randomBytes(16).toString('hex') : 'SanJose2026!');
   const sanJoseSchool = schools.find((s) => s.id === 'school-san-jose-2026');
-  if (
-    sanJoseSchool &&
-    !counselors.some((c) => c.school_id === sanJoseSchool.id && c.role === 'admin' && c.active) &&
-    !counselors.some((c) => c.email.toLowerCase() === 'coordinacion@colegio.edu.pe')
-  ) {
-    changed = true;
-    counselors.push({
-      id: 'counselor-admin-sj',
-      school_id: sanJoseSchool.id,
-      email: 'coordinacion@colegio.edu.pe',
-      password_hash: hashSecret(
-        process.env.INITIAL_STAFF_PASSWORD ||
-        (process.env.NODE_ENV === 'production' ? crypto.randomBytes(16).toString('hex') : 'SanJose2026!')
-      ),
-      full_name: 'Mg. Ricardo Paredes',
-      role: 'admin',
-      active: true,
-      availability: 'available',
-      school_name: sanJoseSchool.name,
-      school_access_code: sanJoseSchool.access_code,
-    });
+  if (sanJoseSchool) {
+    if (!counselors.some((c) => c.school_id === sanJoseSchool.id && c.role === 'admin' && c.active)) {
+      changed = true;
+      counselors.push({
+        id: 'counselor-admin-sj',
+        school_id: sanJoseSchool.id,
+        email: 'coordinacion@colegio.edu.pe',
+        password_hash: hashSecret(defaultStaffPassword),
+        full_name: 'Mg. Ricardo Paredes',
+        role: 'admin',
+        active: true,
+        availability: 'available',
+        school_name: sanJoseSchool.name,
+        school_access_code: sanJoseSchool.access_code,
+        shift: 'completo',
+        phone_whatsapp: '+51 999 111 222',
+        responsabilidad_label: 'Dirección General (Comité de Bienestar)',
+      });
+    }
+    if (!counselors.some((c) => c.school_id === sanJoseSchool.id && c.email.toLowerCase() === 'toe.tarde@colegio.edu.pe')) {
+      changed = true;
+      counselors.push({
+        id: 'counselor-toe-tarde',
+        school_id: sanJoseSchool.id,
+        email: 'toe.tarde@colegio.edu.pe',
+        password_hash: hashSecret(defaultStaffPassword),
+        full_name: 'Lic. Patricia Vega',
+        role: 'psychologist',
+        active: true,
+        availability: 'available',
+        school_name: sanJoseSchool.name,
+        school_access_code: sanJoseSchool.access_code,
+        shift: 'tarde',
+        phone_whatsapp: '+51 988 444 555',
+        responsabilidad_label: 'Coordinadora de Tutoría (TOE) - Turno Tarde',
+      });
+    }
   }
 
   const rawTickets = Array.isArray(raw.tickets) ? raw.tickets : [];
@@ -1250,6 +1347,26 @@ class TeEscuchoStore {
     return true;
   }
 
+  getPublicStaffDirectory(schoolId: string): PublicStaffMember[] {
+    return this.data.counselors
+      .filter((c) => c.school_id === schoolId && c.active)
+      .map((c) => ({
+        id: c.id,
+        full_name: c.full_name,
+        role: c.role,
+        shift: c.shift || 'manana',
+        grade: c.grade || '',
+        section: c.section || '',
+        responsabilidad_label:
+          c.responsabilidad_label ||
+          (c.role === 'admin'
+            ? 'Dirección General (Comité de Bienestar)'
+            : c.role === 'tutor'
+              ? `Tutor ${c.grade || ''} ${c.section || ''}`.trim()
+              : 'Coordinación de Tutoría (TOE)'),
+      }));
+  }
+
   toPublicSchoolConfig(school: School): PublicSchoolConfig {
     return {
       id: school.id,
@@ -1270,6 +1387,7 @@ class TeEscuchoStore {
       require_closure_outcome: school.retention_config.require_closure_outcome,
       inspira_enabled: school.inspira_enabled !== false,
       inspira_resources: this.resolveSchoolInspiraResources(school),
+      staff_directory: this.getPublicStaffDirectory(school.id),
     };
   }
 
@@ -1322,6 +1440,7 @@ class TeEscuchoStore {
     isSandbox?: boolean;
     userIntent?: string | null;
     isSharedDevice?: boolean;
+    targetCounselorId?: string | null;
   }): Promise<{ ticket: TicketSummary; messages: ChatMessage[] } | { error: string } | null> {
     const school = this.getSchoolById(params.schoolId);
     if (!school || (!school.active && !params.isSandbox)) return null;
@@ -1353,6 +1472,14 @@ class TeEscuchoStore {
       school.spaces.find((sp) => sp.toLowerCase() === cleanSpace.toLowerCase()) ||
       (params.isSandbox ? cleanSpace || school.spaces[0] || 'Otro espacio' : school.spaces[0] || 'Otro espacio');
 
+    let targetCounselor: CounselorRecord | null = null;
+    if (params.targetCounselorId) {
+      targetCounselor = this.counselorsById.get(params.targetCounselorId) || null;
+      if (targetCounselor && (targetCounselor.school_id !== school.id || !targetCounselor.active)) {
+        targetCounselor = null;
+      }
+    }
+
     const now = new Date().toISOString();
     const ticketId = `ticket-${crypto.randomUUID()}`;
     const ticketCode = this.generateUniqueTicketCode();
@@ -1381,6 +1508,12 @@ class TeEscuchoStore {
       risk_level: initialRisk,
       user_intent: (params.userIntent as any) || null,
       is_shared_device: Boolean(params.isSharedDevice),
+      target_counselor_id: targetCounselor?.id || null,
+      target_counselor_name: targetCounselor?.full_name || null,
+      target_counselor_role_label: targetCounselor?.responsabilidad_label || null,
+      whatsapp_notified_at: null,
+      whatsapp_notified_to: null,
+      whatsapp_escalated_at: null,
       ai_suggestion: params.isSandbox
         ? 'Caso de prueba generado desde la consola de plataforma para verificar el flujo del colegio.'
         : null,
@@ -1392,8 +1525,8 @@ class TeEscuchoStore {
       last_student_reply_at: null,
       escalated_at: null,
       escalation_reason: null,
-      assigned_counselor_id: null,
-      assigned_counselor_name: null,
+      assigned_counselor_id: targetCounselor?.id || null,
+      assigned_counselor_name: targetCounselor?.full_name || null,
       has_break_glass: Boolean(breakGlassCiphertext),
       break_glass_ciphertext: breakGlassCiphertext,
       break_glass_unlocked_by: null,
@@ -1420,6 +1553,39 @@ class TeEscuchoStore {
     this.ticketsByCode.set(record.ticket_code.toUpperCase(), record);
     this.data.messages.push(welcomeMessage);
     this.messagesByTicketId.set(ticketId, [welcomeMessage]);
+
+    // Despacho de notificación discreta por WhatsApp al tutor o coordinador
+    const recipientCounselor =
+      targetCounselor ||
+      this.counselorsById.get(school.sla_config.on_call_counselor_id) ||
+      this.data.counselors.find(
+        (c) => c.school_id === school.id && c.active && (c.role === 'psychologist' || c.role === 'admin')
+      ) ||
+      null;
+
+    if (recipientCounselor && recipientCounselor.phone_whatsapp) {
+      void dispatchWhatsAppAlertAsync({
+        recipientPhone: recipientCounselor.phone_whatsapp,
+        recipientName: recipientCounselor.full_name,
+        recipientRoleLabel:
+          recipientCounselor.responsabilidad_label ||
+          (recipientCounselor.role === 'admin' ? 'Dirección' : 'Tutoría (TOE)'),
+        schoolName: school.name,
+        ticketCode: record.ticket_code,
+        riskLevel: record.risk_level,
+        category: record.category,
+        targetedToLabel: targetCounselor
+          ? targetCounselor.responsabilidad_label || targetCounselor.full_name
+          : 'Oficina General de TOE',
+      }).then((res) => {
+        if (res.ok) {
+          record.whatsapp_notified_at = new Date().toISOString();
+          record.whatsapp_notified_to = `${recipientCounselor.full_name} (${res.cleanPhone})`;
+          this.persist();
+        }
+      });
+    }
+
     this.persist();
 
     const { pin_hash: _ph, break_glass_ciphertext: _bg, ..._meta } = record;
@@ -1525,7 +1691,7 @@ class TeEscuchoStore {
     senderRole: 'student' | 'counselor',
     content: string,
     counselor?: CounselorProfile
-  ): { message: ChatMessage; ticket: TicketSummary } | null {
+  ): { message: ChatMessage; ticket: TicketSummary; wasReopened?: boolean } | null {
     const ticket = this.ticketsById.get(ticketId);
     if (!ticket) return null;
     const cleanContent = content.trim().slice(0, MAX_MESSAGE_LENGTH);
@@ -2236,6 +2402,97 @@ class TeEscuchoStore {
       this.persist();
     }
     return due;
+  }
+
+  evaluateWhatsAppEscalations(): Array<{
+    school: School;
+    ticket: TicketSummary;
+    recipientPhone: string;
+    recipientName: string;
+    recipientRoleLabel: string;
+    tier: number;
+    reason: string;
+  }> {
+    const escalations: Array<{
+      school: School;
+      ticket: TicketSummary;
+      recipientPhone: string;
+      recipientName: string;
+      recipientRoleLabel: string;
+      tier: number;
+      reason: string;
+    }> = [];
+    const nowMs = Date.now();
+    let mutated = false;
+
+    for (const ticket of this.data.tickets) {
+      if (
+        ticket.is_sandbox ||
+        ticket.status === 'resuelto' ||
+        ticket.first_counselor_reply_at
+      ) {
+        continue;
+      }
+
+      const elapsedMin = Math.floor((nowMs - new Date(ticket.created_at).getTime()) / 60_000);
+      const isCritical = ticket.risk_level === 'critico';
+      const tier1Threshold = isCritical ? 15 : 30; // 15m crítico, 30m regular
+      const tier2Threshold = isCritical ? 30 : 60; // 30m crítico, 60m regular
+
+      const currentTier = ticket.cascade_notified_tier ?? 0;
+      const school = this.getSchoolById(ticket.school_id);
+      if (!school || !school.active) continue;
+
+      const schoolCounselors = this.listSchoolCounselors(school.id);
+
+      // Escalación Tier 1: A la Coordinación de TOE
+      if (currentTier < 1 && elapsedMin >= tier1Threshold) {
+        const coord =
+          schoolCounselors.find((c) => c.active && c.role === 'psychologist' && c.phone_whatsapp) ||
+          schoolCounselors.find((c) => c.active && c.role === 'admin' && c.phone_whatsapp);
+
+        if (coord && coord.phone_whatsapp) {
+          ticket.cascade_notified_tier = 1;
+          ticket.whatsapp_escalated_at = new Date().toISOString();
+          mutated = true;
+          escalations.push({
+            school,
+            ticket: this.toSummary(ticket),
+            recipientPhone: coord.phone_whatsapp,
+            recipientName: coord.full_name,
+            recipientRoleLabel: coord.responsabilidad_label || 'Coordinación TOE',
+            tier: 1,
+            reason: `Caso sin primera respuesta tras ${elapsedMin} minutos (Escalado a Coordinación TOE).`,
+          });
+        }
+      }
+      // Escalación Tier 2: A Dirección / Administración
+      else if (currentTier < 2 && elapsedMin >= tier2Threshold) {
+        const director =
+          schoolCounselors.find((c) => c.active && c.role === 'admin' && c.phone_whatsapp) ||
+          schoolCounselors.find((c) => c.active && c.phone_whatsapp);
+
+        if (director && director.phone_whatsapp) {
+          ticket.cascade_notified_tier = 2;
+          ticket.whatsapp_escalated_at = new Date().toISOString();
+          mutated = true;
+          escalations.push({
+            school,
+            ticket: this.toSummary(ticket),
+            recipientPhone: director.phone_whatsapp,
+            recipientName: director.full_name,
+            recipientRoleLabel: director.responsabilidad_label || 'Dirección General',
+            tier: 2,
+            reason: `Caso sin primera respuesta tras ${elapsedMin} minutos (Escalado a Dirección General).`,
+          });
+        }
+      }
+    }
+
+    if (mutated) {
+      this.persist();
+    }
+    return escalations;
   }
 
   // ---- Role-Based Sandboxing & Counselor Auth ----
@@ -3110,6 +3367,11 @@ class TeEscuchoStore {
       email: string;
       password: string;
       role: CounselorRole;
+      phone_whatsapp?: string;
+      shift?: ShiftType;
+      grade?: string;
+      section?: string;
+      responsabilidad_label?: string;
     }
   ): Promise<{ counselor: CounselorProfile } | { error: string }> {
     const school = this.getSchoolById(schoolId);
@@ -3132,6 +3394,14 @@ class TeEscuchoStore {
       return { error: `El correo ${email} ya está asignado a una cuenta.` };
     }
 
+    const defaultRespLabel =
+      input.responsabilidad_label?.trim() ||
+      (input.role === 'admin'
+        ? 'Dirección General'
+        : input.role === 'tutor'
+          ? `Tutor ${input.grade || ''} ${input.section || ''}`.trim() || 'Docente Tutor'
+          : 'Coordinación de Tutoría (TOE)');
+
     const record: CounselorRecord = {
       id: `counselor-${crypto.randomUUID().slice(0, 8)}`,
       school_id: school.id,
@@ -3143,6 +3413,11 @@ class TeEscuchoStore {
       availability: 'available',
       school_name: school.name,
       school_access_code: school.access_code,
+      phone_whatsapp: input.phone_whatsapp?.trim() || '',
+      shift: input.shift || 'manana',
+      grade: input.grade?.trim() || '',
+      section: input.section?.trim() || '',
+      responsabilidad_label: defaultRespLabel,
     };
 
     this.data.counselors.push(record);
@@ -3161,6 +3436,11 @@ class TeEscuchoStore {
       active?: boolean;
       new_password?: string;
       availability?: CounselorAvailability;
+      phone_whatsapp?: string;
+      shift?: ShiftType;
+      grade?: string;
+      section?: string;
+      responsabilidad_label?: string;
     }
   ): Promise<{ counselor: CounselorProfile } | { error: string }> {
     const idx = this.data.counselors.findIndex((c) => c.id === counselorId);
@@ -3211,6 +3491,21 @@ class TeEscuchoStore {
     }
     if (updates.availability !== undefined) {
       current.availability = updates.availability;
+    }
+    if (updates.phone_whatsapp !== undefined) {
+      current.phone_whatsapp = updates.phone_whatsapp.trim();
+    }
+    if (updates.shift !== undefined) {
+      current.shift = updates.shift;
+    }
+    if (updates.grade !== undefined) {
+      current.grade = updates.grade.trim();
+    }
+    if (updates.section !== undefined) {
+      current.section = updates.section.trim();
+    }
+    if (updates.responsabilidad_label !== undefined) {
+      current.responsabilidad_label = updates.responsabilidad_label.trim();
     }
     if (updates.new_password && updates.new_password.trim().length >= 6) {
       current.password_hash = await hashSecretAsync(updates.new_password.trim());

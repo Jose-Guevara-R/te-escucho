@@ -6,6 +6,7 @@ export type MoodType = 'tranquilo' | 'preocupado' | 'triste' | 'excluido' | 'en_
 export type SpaceTag = string;
 
 export type CounselorRole = 'psychologist' | 'tutor' | 'admin';
+export type ShiftType = 'manana' | 'tarde' | 'completo';
 export type CounselorAvailability = 'available' | 'busy' | 'off_duty';
 export type SlaStatus = 'ok' | 'warning' | 'breached';
 export type AiSensitivity = 'conservador' | 'estandar' | 'alta';
@@ -113,6 +114,16 @@ export interface School {
   created_at: string;
 }
 
+export interface PublicStaffMember {
+  id: string;
+  full_name: string;
+  role: CounselorRole;
+  shift?: ShiftType;
+  grade?: string;
+  section?: string;
+  responsabilidad_label?: string;
+}
+
 export interface PublicSchoolConfig {
   id: string;
   name: string;
@@ -132,6 +143,7 @@ export interface PublicSchoolConfig {
   require_closure_outcome?: boolean;
   inspira_enabled?: boolean;
   inspira_resources?: InspiraResource[];
+  staff_directory?: PublicStaffMember[];
 }
 
 export type DemoPolicy = 'timed' | 'off';
@@ -201,6 +213,12 @@ export interface TicketSummary {
   reopen_count?: number;
   user_intent?: StudentIntent | null;
   is_shared_device?: boolean;
+  target_counselor_id?: string | null;
+  target_counselor_name?: string | null;
+  target_counselor_role_label?: string | null;
+  whatsapp_notified_at?: string | null;
+  whatsapp_notified_to?: string | null;
+  whatsapp_escalated_at?: string | null;
   created_at: string;
   updated_at: string;
   last_message_preview?: string;
@@ -238,6 +256,11 @@ export interface CounselorProfile {
   availability: CounselorAvailability;
   school_name: string;
   school_access_code: string;
+  phone_whatsapp?: string;
+  shift?: ShiftType;
+  grade?: string;
+  section?: string;
+  responsabilidad_label?: string;
 }
 
 export type StaffAlertThreshold = 'criticos_y_sla' | 'criticos_y_medios' | 'todos';
