@@ -3,11 +3,11 @@ import { Moon, Sun } from 'lucide-react';
 import { applyTheme, getStoredTheme, getSystemTheme, setStoredTheme, type ThemeMode } from '../utils/theme';
 
 interface ThemeToggleProps {
-  variant?: 'floating' | 'inline';
+  variant?: 'icon' | 'inline' | 'floating';
   className?: string;
 }
 
-export function ThemeToggle({ variant = 'floating', className = '' }: ThemeToggleProps) {
+export function ThemeToggle({ variant = 'icon', className = '' }: ThemeToggleProps) {
   const [themeMode, setThemeMode] = useState<ThemeMode>(getStoredTheme);
   const [isDark, setIsDark] = useState<boolean>(() => {
     const current = getStoredTheme();
@@ -37,6 +37,29 @@ export function ThemeToggle({ variant = 'floating', className = '' }: ThemeToggl
     setIsDark(!isDark);
   };
 
+  // Default Header Icon Button: 40x40px, perfectly aligned with SOS and Help buttons
+  if (variant === 'icon') {
+    return (
+      <button
+        type="button"
+        onClick={handleToggle}
+        className={`min-h-[40px] min-w-[36px] sm:min-w-[40px] px-2.5 flex items-center justify-center rounded-xl border transition-all duration-200 shrink-0 ${
+          isDark
+            ? 'bg-slate-800/90 hover:bg-slate-700/90 border-slate-700 text-amber-400 hover:text-amber-300'
+            : 'bg-white hover:bg-slate-50 border-slate-200 text-teal-700 hover:text-teal-900 shadow-xs'
+        } ${className}`}
+        title={isDark ? 'Cambiar a modo día' : 'Cambiar a modo noche'}
+        aria-label={isDark ? 'Activar modo día' : 'Activar modo noche'}
+      >
+        {isDark ? (
+          <Sun className="w-4 h-4 transition-transform hover:rotate-90 duration-300" />
+        ) : (
+          <Moon className="w-4 h-4 transition-transform hover:-rotate-12 duration-300" />
+        )}
+      </button>
+    );
+  }
+
   if (variant === 'inline') {
     return (
       <button
@@ -65,6 +88,7 @@ export function ThemeToggle({ variant = 'floating', className = '' }: ThemeToggl
     );
   }
 
+  // Floating variant only if explicitly requested
   return (
     <div
       className={`fixed bottom-24 right-4 sm:bottom-28 sm:right-6 z-40 print:hidden ${className}`}
@@ -73,17 +97,15 @@ export function ThemeToggle({ variant = 'floating', className = '' }: ThemeToggl
       <button
         type="button"
         onClick={handleToggle}
-        className="group flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-2.5 rounded-full shadow-2xl transition-all duration-300 active:scale-95 bg-slate-900/90 dark:bg-slate-800/95 text-slate-100 backdrop-blur-md border border-slate-700/80 hover:border-teal-400/60 hover:shadow-teal-500/20"
+        className="group flex items-center gap-2.5 px-3.5 py-2.5 rounded-full shadow-2xl transition-all duration-300 active:scale-95 bg-slate-900/90 dark:bg-slate-800/95 text-slate-100 backdrop-blur-md border border-slate-700/80 hover:border-teal-400/60"
         title={isDark ? 'Cambiar a modo día' : 'Cambiar a modo noche'}
         aria-label={isDark ? 'Activar modo día' : 'Activar modo noche'}
       >
-        <div className="relative w-4 h-4 flex items-center justify-center">
-          {isDark ? (
-            <Sun className="w-4 h-4 text-amber-400 transition-transform duration-300 group-hover:rotate-90" />
-          ) : (
-            <Moon className="w-4 h-4 text-teal-400 transition-transform duration-300 group-hover:-rotate-12" />
-          )}
-        </div>
+        {isDark ? (
+          <Sun className="w-4 h-4 text-amber-400" />
+        ) : (
+          <Moon className="w-4 h-4 text-teal-400" />
+        )}
         <span className="text-xs font-semibold tracking-tight text-slate-200">
           {isDark ? 'Modo Día' : 'Modo Noche'}
         </span>

@@ -378,7 +378,6 @@ export default function App() {
         />
       )}
 
-      <ThemeToggle />
       <OfflineIndicator />
     </>
   );

@@ -42,6 +42,7 @@ import { PWAInstallButton } from './PWAInstallButton';
 import { QrPosterGenerator } from './QrPosterGenerator';
 import { SchoolAnalytics } from './SchoolAnalytics';
 import { SchoolSettingsPanel } from './SchoolSettingsPanel';
+import { ThemeToggle } from './ThemeToggle';
 
 interface CounselorPanelProps {
   token: string;
@@ -1146,14 +1147,17 @@ export const CounselorPanel: React.FC<CounselorPanelProps> = ({
             </button>
           </nav>
 
-          <button
-            type="button"
-            onClick={onLogout}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition whitespace-nowrap shrink-0"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Cerrar sesión</span>
-          </button>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <ThemeToggle variant="icon" />
+            <button
+              type="button"
+              onClick={onLogout}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition whitespace-nowrap shrink-0"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
         </div>
       </header>
 

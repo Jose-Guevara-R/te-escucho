@@ -28,6 +28,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 import type {
   AdminOverviewData,
   AdminSchoolSummary,
@@ -830,6 +831,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
             {currentBreadcrumb}
           </p>
           <div className="flex items-center gap-2.5 shrink-0">
+            <ThemeToggle variant="icon" />
             <button
               type="button"
               onClick={() => {

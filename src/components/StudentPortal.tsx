@@ -46,6 +46,7 @@ import { EmergencyHelpModal } from './EmergencyHelpModal';
 import { EspacioInspira } from './EspacioInspira';
 import { PWAInstallButton } from './PWAInstallButton';
 import { TeEscuchoLogo } from './TeEscuchoLogo';
+import { ThemeToggle } from './ThemeToggle';
 import { getSchoolOperatingStatus } from '../utils/schoolHours';
 
 export type StudentScreen =
@@ -930,6 +931,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
               >
                 SOS
               </button>
+              <ThemeToggle variant="icon" />
               <button
                 type="button"
                 onClick={() => setPrivacyNoticeOpen(true)}
@@ -1299,6 +1301,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
               <span className="hidden sm:inline">Ayuda inmediata</span>
               <span className="sm:hidden">SOS</span>
             </button>
+            <ThemeToggle variant="icon" />
             <button
               type="button"
               onClick={() => setPrivacyNoticeOpen(true)}
