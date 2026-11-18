@@ -139,6 +139,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   const [loadingTeam, setLoadingTeam] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberEmailAuto, setNewMemberEmailAuto] = useState(true); // tracks if email is auto-generated
   const [newMemberPassword, setNewMemberPassword] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<CounselorRole>('coordinator_toe');
   const [newMemberShift, setNewMemberShift] = useState<ShiftType>('manana');
@@ -147,6 +148,10 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   const [newMemberPhone, setNewMemberPhone] = useState('');
   const [newMemberRespLabel, setNewMemberRespLabel] = useState('');
   const [addingMember, setAddingMember] = useState(false);
+  // Stores plain credentials of members created in this session for download
+  const [sessionCredentials, setSessionCredentials] = useState<Array<{
+    name: string; email: string; role: CounselorRole; password: string; shift: string; grade?: string; section?: string;
+  }>>([]);
   const [resetPasswordTarget, setResetPasswordTarget] = useState<string | null>(null);
   const [resetPasswordValue, setResetPasswordValue] = useState('');
 
@@ -483,6 +488,154 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
     }
   };
 
+  // ─── Email auto-generation helpers ───────────────────────────────────────
+  const ROLE_EMAIL_SUFFIX: Record<CounselorRole, string> = {
+    director: 'director',
+    coordinator_toe: 'toe',
+    psychologist: 'psico',
+    tutor: 'tutor',
+    admin: 'admin',
+  };
+
+  const generateEmailFromName = (fullName: string, role: CounselorRole): string => {
+    const normalized = fullName
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // remove accents
+      .replace(/[^a-z\s]/g, '');      // keep only letters and spaces
+    const parts = normalized.split(/\s+/).filter(Boolean);
+    // Use first apellido (second word); fallback to first word
+    const apellido = parts.length >= 2 ? parts[1] : parts[0] || 'usuario';
+    const suffix = ROLE_EMAIL_SUFFIX[role] || 'staff';
+    return `${apellido}.${suffix}@teescucho.edu`;
+  };
+
+  // Auto-update email when name or role changes (only if still auto-managed)
+  React.useEffect(() => {
+    if (newMemberEmailAuto && newMemberName.trim().length >= 3) {
+      setNewMemberEmail(generateEmailFromName(newMemberName, newMemberRole));
+    }
+  }, [newMemberName, newMemberRole, newMemberEmailAuto]);
+
+  // ─── Credential sheet download ────────────────────────────────────────────
+  const handleDownloadCredentials = () => {
+    if (!draftSchool) return;
+    const roleLabel: Record<string, string> = {
+      director: 'Director / Directora',
+      coordinator_toe: 'Coordinador/a de Tutoría (TOE)',
+      psychologist: 'Psicólogo/a Escolar',
+      tutor: 'Docente Tutor/a de Aula',
+      admin: 'Administrador/a de Colegio',
+    };
+    const shiftLabel: Record<string, string> = {
+      manana: 'Turno Mañana', tarde: 'Turno Tarde', completo: 'Jornada Completa',
+    };
+    const allMembers = team.filter((m) => m.active);
+    const rows = allMembers.map((m) => {
+      const sessionEntry = sessionCredentials.find((s) => s.email === m.email);
+      const pwd = sessionEntry ? sessionEntry.password : '(contraseña establecida al crear)';
+      const gradeSec = m.grade ? `${m.grade}${m.section ? ' "' + m.section + '"' : ''}` : '—';
+      return `
+        <tr>
+          <td>${m.full_name}</td>
+          <td>${roleLabel[m.role] || m.role}</td>
+          <td>${shiftLabel[m.shift || 'manana'] || m.shift || '—'}</td>
+          <td>${gradeSec}</td>
+          <td style="font-family:monospace;font-size:12px">${m.email}</td>
+          <td style="font-family:monospace;font-size:12px">${pwd}</td>
+          <td>${m.phone_whatsapp || '—'}</td>
+        </tr>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>Credenciales – ${draftSchool.name}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',sans-serif;padding:32px;color:#1e293b;background:#fff}
+  .header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;border-bottom:3px solid #0d9488;padding-bottom:16px}
+  .logo{font-size:22px;font-weight:800;color:#0d9488;letter-spacing:-0.5px}
+  .logo span{color:#1e293b}
+  .meta{font-size:11px;color:#64748b;text-align:right;line-height:1.6}
+  h1{font-size:16px;font-weight:700;color:#1e293b;margin-bottom:4px}
+  .badge{display:inline-block;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px}
+  th{background:#f8fafc;border:1px solid #e2e8f0;padding:8px 10px;text-align:left;font-size:11px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  td{border:1px solid #e2e8f0;padding:8px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#f8fafc}
+  .url-box{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:10px 14px;font-size:11px;color:#475569;margin-bottom:20px}
+  .url-box strong{color:#0d9488}
+  .warning{background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 14px;font-size:11px;color:#9a3412;margin-top:12px}
+  .footer{margin-top:24px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px}
+  @media print{body{padding:16px}.warning{display:none}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="logo">Te <span>Escucho</span></div>
+    <div style="font-size:11px;color:#64748b;margin-top:4px">Plataforma de Bienestar Escolar</div>
+  </div>
+  <div class="meta">
+    <strong>${draftSchool.name}</strong><br/>
+    Código estudiantil: <strong>${draftSchool.access_code}</strong><br/>
+    Generado: ${new Date().toLocaleDateString('es-PE', { day:'2-digit', month:'long', year:'numeric' })}
+  </div>
+</div>
+
+<h1>Directorio de Credenciales — Equipo Orientador</h1>
+<span class="badge">Uso Interno Exclusivo · Confidencial</span>
+
+<div class="url-box">
+  <strong>URL de acceso institucional:</strong>
+  https://te-escucho-2rl4.onrender.com/?openStaff=1
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Responsable</th>
+      <th>Cargo</th>
+      <th>Turno</th>
+      <th>Grado / Sección</th>
+      <th>Correo de Acceso</th>
+      <th>Contraseña</th>
+      <th>WhatsApp Alertas</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${rows || '<tr><td colspan="7" style="text-align:center;color:#94a3b8">Sin miembros activos registrados</td></tr>'}
+  </tbody>
+</table>
+
+<div class="warning">
+  ⚠️ <strong>Documento confidencial.</strong> No compartir por correo ni redes sociales. Entregar personalmente a cada responsable. Cambiar la contraseña inicial en el primer ingreso.
+</div>
+
+<div class="footer">
+  Generado automáticamente por la Consola de Plataforma Te Escucho &nbsp;·&nbsp; ${draftSchool.name} &nbsp;·&nbsp; ${new Date().toISOString().slice(0,10)}
+</div>
+
+<script>window.onload=()=>{window.print()}</script>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (!win) {
+      // Fallback: download file directly
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `credenciales-${draftSchool.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+      a.click();
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
   const handleCreateTeamMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!draftSchool) return;
@@ -509,8 +662,22 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo crear la cuenta.');
+      // Save plain credentials for download (session-only, not persisted)
+      setSessionCredentials((prev) => [
+        ...prev,
+        {
+          name: newMemberName,
+          email: newMemberEmail,
+          role: newMemberRole,
+          password: newMemberPassword,
+          shift: newMemberShift,
+          grade: newMemberGrade || undefined,
+          section: newMemberSection || undefined,
+        },
+      ]);
       setNewMemberName('');
       setNewMemberEmail('');
+      setNewMemberEmailAuto(true);
       setNewMemberPassword('');
       setNewMemberRole('coordinator_toe');
       setNewMemberShift('manana');
@@ -1643,10 +1810,24 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                             onSubmit={handleCreateTeamMember}
                             className="pt-5 border-t border-slate-100 space-y-4"
                           >
-                            <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                              <UserPlus className="w-4 h-4 text-teal-700" />
-                              Agregar nuevo miembro al colegio
-                            </h3>
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                <UserPlus className="w-4 h-4 text-teal-700" />
+                                Agregar nuevo miembro al colegio
+                              </h3>
+                              {/* Download credentials button */}
+                              {team.filter((m) => m.active).length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={handleDownloadCredentials}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-semibold transition"
+                                  title="Genera una hoja imprimible con todas las credenciales del equipo"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                  Descargar credenciales
+                                </button>
+                              )}
+                            </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <input
@@ -1654,17 +1835,44 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                                 required
                                 value={newMemberName}
                                 onChange={(e) => setNewMemberName(e.target.value)}
-                                placeholder="Nombre completo (ej. Psic. Ana Torres)"
+                                placeholder="Nombre completo (ej. Julio Pérez Saldaña)"
                                 className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
                               />
-                              <input
-                                type="email"
-                                required
-                                value={newMemberEmail}
-                                onChange={(e) => setNewMemberEmail(e.target.value)}
-                                placeholder="Correo institucional"
-                                className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
-                              />
+                              {/* Email field — auto-generated from name + role */}
+                              <div className="relative">
+                                <input
+                                  type="email"
+                                  required
+                                  value={newMemberEmail}
+                                  onChange={(e) => {
+                                    setNewMemberEmailAuto(false);
+                                    setNewMemberEmail(e.target.value);
+                                  }}
+                                  placeholder="Correo (se genera automáticamente)"
+                                  className={`w-full rounded-lg px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 border ${
+                                    newMemberEmailAuto && newMemberEmail
+                                      ? 'bg-teal-50 border-teal-300 focus:bg-white'
+                                      : 'bg-slate-50 border-slate-200 focus:bg-white'
+                                  }`}
+                                />
+                                {newMemberEmailAuto && newMemberEmail && (
+                                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-teal-600 text-[9px] font-semibold bg-teal-100 rounded px-1.5 py-0.5 pointer-events-none">
+                                    AUTO
+                                  </span>
+                                )}
+                                {!newMemberEmailAuto && newMemberName.trim().length >= 3 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setNewMemberEmailAuto(true);
+                                      setNewMemberEmail(generateEmailFromName(newMemberName, newMemberRole));
+                                    }}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-700 text-[9px] underline"
+                                  >
+                                    Regenerar
+                                  </button>
+                                )}
+                              </div>
                               <input
                                 type="password"
                                 required
@@ -1724,6 +1932,17 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                                 </>
                               )}
                             </div>
+
+                            {/* Preview of auto-generated email */}
+                            {newMemberEmailAuto && newMemberEmail && (
+                              <p className="text-[10px] text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-3 py-1.5">
+                                📧 Correo generado automáticamente: <strong>{newMemberEmail}</strong>
+                                &nbsp;—&nbsp;
+                                <button type="button" onClick={() => setNewMemberEmailAuto(false)} className="underline hover:no-underline">
+                                  Editar manualmente
+                                </button>
+                              </p>
+                            )}
 
                             <button
                               type="submit"
