@@ -87,7 +87,7 @@ interface DemoTourBarProps {
 
 const ROLE_SWITCHES: Array<{ id: DemoRoleTarget; label: string }> = [
   { id: 'student', label: 'Estudiante' },
-  { id: 'counselor_psy', label: 'Psicología' },
+  { id: 'counselor_psy', label: 'Tutoría (TOE)' },
   { id: 'counselor_admin', label: 'Mi Colegio' },
   { id: 'platform_admin', label: 'Super Admin' },
 ];

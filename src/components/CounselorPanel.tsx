@@ -1095,7 +1095,7 @@ export const CounselorPanel: React.FC<CounselorPanelProps> = ({
                 Te Escucho
               </span>
               <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400 tracking-wider uppercase mt-0.5">
-                Panel Institucional
+                Panel de Tutoría (TOE) y Convivencia
               </span>
             </div>
           </div>
@@ -1180,10 +1180,10 @@ export const CounselorPanel: React.FC<CounselorPanelProps> = ({
             <span aria-hidden="true">·</span>
             <span>
               {counselor.role === 'admin'
-                ? 'Admin Colegio'
+                ? 'Coordinador(a) Convivencia'
                 : counselor.role === 'psychologist'
-                  ? 'Psicólogo'
-                  : 'Tutor'}
+                  ? 'Psicología / Apoyo'
+                  : 'Coordinador(a) TOE / Tutor'}
             </span>
             <span aria-hidden="true">·</span>
             <span className="font-mono text-teal-800">
@@ -1732,7 +1732,7 @@ export const CounselorPanel: React.FC<CounselorPanelProps> = ({
                               }`}
                             >
                               {m.sender_role === 'counselor'
-                                ? 'Psicología / Tutoría'
+                                ? 'Orientador(a) TOE / Tutoría'
                                 : 'Estudiante Anónimo'}
                             </div>
                             <p className="whitespace-pre-wrap">{m.content}</p>

@@ -1002,8 +1002,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                 <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>
                   {createdTicket.custody_claimed_role === 'tutor'
-                    ? 'Una orientadora de Tutoría se ha hecho cargo de tu caso'
-                    : 'Una especialista de Psicología se ha hecho cargo de tu caso'}
+                    ? 'Un orientador de Tutoría (TOE) se ha hecho cargo de tu caso'
+                    : createdTicket.custody_claimed_role === 'admin'
+                      ? 'La Coordinación de Convivencia Escolar se ha hecho cargo de tu caso'
+                      : 'El equipo de Tutoría y Bienestar se ha hecho cargo de tu caso'}
                 </span>
               </span>
               <span className="text-[11px] text-emerald-700 font-mono tabular-nums font-medium">
@@ -1014,7 +1016,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
             <div className="mb-3 px-3.5 py-2 rounded-xl bg-sky-50/80 border border-sky-200 text-xs text-sky-900 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse shrink-0" />
               <span>
-                Mensaje recibido en el colegio. En espera de que una orientadora tome tu caso.
+                Mensaje recibido en la Oficina de TOE. En espera de asignación de orientador.
               </span>
             </div>
           )}
@@ -1337,7 +1339,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
             <div className="flex items-center gap-2">
               <Smartphone className="w-4 h-4 shrink-0 text-slate-950" />
               <span>
-                <strong>Modo Celular Prestado activo:</strong> No se guardará nada en este teléfono al salir.
+                <strong>Modo Celular Prestado / Cabina o PC de Colegio activo:</strong> No se guardará nada en este dispositivo al salir.
               </span>
             </div>
             <button
@@ -1443,8 +1445,8 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                   </div>
                   <span className="text-xs text-slate-400">Anónimo · 1 toque</span>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  ¿Cómo te sientes hoy en tu colegio? Tu pulso ayuda a tutores y psicólogos a cuidar el ambiente del salón antes de que ocurra un problema mayor.
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  ¿Cómo te sientes hoy en tu colegio? Tu pulso ayuda al equipo de Tutoría (TOE) a cuidar el ambiente del salón antes de que ocurra un problema mayor.
                 </p>
 
                 {moodSent ? (
@@ -1508,15 +1510,15 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
               </section>
 
               <div className="pt-1 space-y-2.5">
-                <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
-                  <span>¿Eres psicólogo o tutor escolar?</span>
+                <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+                  <span>¿Eres docente tutor o del equipo de TOE?</span>
                   <button
                     type="button"
                     onClick={onOpenCounselorLogin}
-                    className="inline-flex items-center gap-1.5 font-semibold text-teal-800 hover:text-teal-900 underline underline-offset-4 min-h-[44px]"
+                    className="inline-flex items-center gap-1.5 font-semibold text-teal-800 dark:text-teal-400 hover:text-teal-900 dark:hover:text-teal-300 underline underline-offset-4 min-h-[44px]"
                   >
                     <Lock className="w-3.5 h-3.5" />
-                    Acceso Tutores / Psicología
+                    Acceso Oficina TOE / Convivencia
                   </button>
                 </div>
 
@@ -1611,7 +1613,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                   </p>
                 </div>
 
-                {/* Modo "Este celular no es mío" Toggle */}
+                {/* Modo Celular Prestado o PC Compartida Toggle */}
                 <div
                   className={`p-3 rounded-2xl border transition ${
                     isSharedDevice
@@ -1632,12 +1634,12 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                       </div>
                       <div>
                         <p className="text-xs font-bold text-slate-800">
-                          {isSharedDevice ? 'Modo Celular Prestado: ACTIVO' : '¿Este celular no es tuyo?'}
+                          {isSharedDevice ? 'Modo Celular o PC Compartida: ACTIVO' : '¿Usas celular ajeno o PC de biblioteca/colegio?'}
                         </p>
                         <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
                           {isSharedDevice
-                            ? 'No se guardará sesión ni notificaciones al salir.'
-                            : 'Actívalo si es de un amigo, familiar o compartido.'}
+                            ? 'No se guardará sesión, historial ni notificaciones al salir.'
+                            : 'Actívalo si estás en una computadora del colegio, cabina o celular prestado.'}
                         </p>
                       </div>
                     </div>
@@ -1750,6 +1752,13 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                     <span>Líneas de ayuda inmediata (Línea 100 / Emergencias)</span>
                   </button>
                 </div>
+
+                <div className="mt-3 pt-3 border-t border-slate-100/80 flex items-start gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                  <ShieldCheck className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Marco MINEDU (D.S. N.° 018-2026 / Ley 29719):</strong> Plataforma escolar para convivencia, hora de tutoría (TOE) y auxilio a la integridad del estudiante.
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -1789,7 +1798,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
 
             <h1 className="text-2xl font-bold text-slate-900">Retomar conversación</h1>
             <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-              Ingresa tu código único y el PIN de 4 números que creaste para leer las respuestas de psicología.
+              Ingresa tu código único y el PIN de 4 números que creaste para leer las respuestas de la Oficina de Tutoría (TOE).
             </p>
 
             {errorMsg && (
@@ -2269,7 +2278,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                     {showBreakGlassOption && (
                       <div className="space-y-1.5 pt-1">
                         <p className="text-[11px] text-slate-500 leading-relaxed">
-                          Se cifra con AES-256. Psicología <strong>jamás podrá verlo</strong> salvo que detecte riesgo físico crítico y necesite ubicarte de urgencia.
+                          Se cifra con AES-256. El equipo de TOE <strong>jamás podrá verlo</strong> salvo que detecte riesgo físico crítico y necesite ubicarte de urgencia.
                         </p>
                         <input
                           type="text"
@@ -2308,7 +2317,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                     Tu espacio privado está listo
                   </h1>
                   <p className="text-sm text-slate-600 mt-1.5">
-                    Guarda este código para volver a entrar y leer las respuestas de tu tutor o psicólogo:
+                    Guarda este código para volver a entrar y leer las respuestas de tu orientador o tutor de TOE:
                   </p>
                 </div>
 

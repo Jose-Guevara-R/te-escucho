@@ -61,7 +61,7 @@ export const CounselorLogin: React.FC<CounselorLoginProps> = ({
           <TeEscuchoLogo size={42} animated={false} className="shrink-0" />
           <div>
             <h1 className="text-xl font-bold text-slate-900">Acceso Institucional</h1>
-            <p className="text-xs text-slate-500">Departamento de Psicología y Tutoría</p>
+            <p className="text-xs text-slate-500">Oficina de Tutoría (TOE) y Convivencia Escolar</p>
           </div>
         </div>
 
@@ -127,7 +127,7 @@ export const CounselorLogin: React.FC<CounselorLoginProps> = ({
         <div className="mt-5 pt-5 border-t border-slate-100 space-y-3">
           <p className="text-[11px] text-slate-400 flex items-center justify-center gap-1.5 text-center">
             <ShieldCheck className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-            Cada especialista solo accede a los casos de su institución.
+            Cada orientador(a) accede únicamente a los casos de su institución y turno escolar.
           </p>
           {onOpenAdmin && (
             <div className="pt-2 text-center">
