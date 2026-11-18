@@ -42,6 +42,7 @@ import { PWAInstallButton } from './PWAInstallButton';
 import { QrPosterGenerator } from './QrPosterGenerator';
 import { SchoolAnalytics } from './SchoolAnalytics';
 import { SchoolSettingsPanel } from './SchoolSettingsPanel';
+import { TeEscuchoLogo } from './TeEscuchoLogo';
 import { ThemeToggle } from './ThemeToggle';
 
 interface CounselorPanelProps {
@@ -1085,11 +1086,19 @@ export const CounselorPanel: React.FC<CounselorPanelProps> = ({
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800">
       {/* 3-Zone Top Bar Contract */}
-      <header className="print:hidden bg-white border-b border-slate-200 sticky top-0 z-30">
+      <header className="print:hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-8">
-          <span className="text-lg font-extrabold tracking-tight text-teal-900 whitespace-nowrap shrink-0">
-            Te Escucho
-          </span>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <TeEscuchoLogo size={38} animated={false} className="shrink-0 drop-shadow-sm" />
+            <div className="flex flex-col">
+              <span className="text-lg font-black tracking-tight text-teal-950 dark:text-teal-200 leading-none whitespace-nowrap">
+                Te Escucho
+              </span>
+              <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400 tracking-wider uppercase mt-0.5">
+                Panel Institucional
+              </span>
+            </div>
+          </div>
 
           <nav className="flex items-center gap-6 overflow-x-auto text-sm font-medium">
             <button

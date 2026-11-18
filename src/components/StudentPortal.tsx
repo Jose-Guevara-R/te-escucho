@@ -1228,26 +1228,34 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50/80 via-slate-50 to-emerald-50/50 flex flex-col">
       {/* Clean Minimal Student Header */}
-      <header className="w-full border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2.5">
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#090E1A]/95 backdrop-blur-md shadow-xs transition-shadow duration-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => {
               setScreen('welcome');
               setErrorMsg(null);
             }}
-            className="flex items-center gap-2 sm:gap-2.5 text-left shrink-0"
+            className="flex items-center gap-2.5 sm:gap-3 text-left shrink-0 group focus:outline-none"
+            title="Ir al inicio de Te Escucho"
           >
-            <TeEscuchoLogo size={34} animated={false} className="shrink-0" />
-            <span className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 whitespace-nowrap">
-              Te Escucho
-            </span>
+            <div className="relative shrink-0 flex items-center justify-center">
+              <TeEscuchoLogo size={44} animated={false} className="shrink-0 drop-shadow-sm transition-transform duration-200 group-hover:scale-105" />
+            </div>
+            <div className="flex flex-col min-w-0 justify-center">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none whitespace-nowrap">
+                Te Escucho
+              </span>
+              <span className="text-[10px] sm:text-xs font-bold text-teal-700 dark:text-teal-400 tracking-wider uppercase mt-1 whitespace-nowrap">
+                Apoyo Escolar
+              </span>
+            </div>
           </button>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {verifiedSchool?.inspira_enabled !== false && (
               <div
-                className="hidden sm:inline-flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200/80"
+                className="hidden sm:inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80"
                 role="tablist"
                 aria-label="Secciones estudiantiles"
               >
@@ -1259,13 +1267,13 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                     setErrorMsg(null);
                     setScreen(verifiedSchool ? 'category' : 'welcome');
                   }}
-                  className={`min-h-[34px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
+                  className={`min-h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
                     screen !== 'inspira'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
                   <span>Buzón seguro</span>
                 </button>
                 <button
@@ -1280,10 +1288,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                   style={
                     screen === 'inspira' ? { backgroundColor: activeAccent } : undefined
                   }
-                  className={`min-h-[34px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
+                  className={`min-h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
                     screen === 'inspira'
                       ? 'text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -1295,17 +1303,17 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
             <button
               type="button"
               onClick={() => setSosOpen(true)}
-              className="min-h-[40px] inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-800 transition whitespace-nowrap"
+              className="min-h-[38px] sm:min-h-[40px] inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-bold text-rose-800 dark:text-rose-300 transition whitespace-nowrap"
             >
               <PhoneCall className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden sm:inline">Ayuda inmediata</span>
-              <span className="sm:hidden">SOS</span>
+              <span className="sm:hidden font-extrabold">SOS</span>
             </button>
             <ThemeToggle variant="icon" />
             <button
               type="button"
               onClick={() => setPrivacyNoticeOpen(true)}
-              className="min-h-[40px] w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition"
+              className="min-h-[38px] sm:min-h-[40px] w-8 sm:w-9 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition"
               title="Límites de privacidad y salida rápida"
               aria-label="Límites de privacidad"
             >
@@ -1314,7 +1322,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
             <button
               type="button"
               onClick={handleQuickExit}
-              className="min-h-[40px] inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition whitespace-nowrap"
+              className="min-h-[38px] sm:min-h-[40px] px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center justify-center rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition whitespace-nowrap"
               title="Salir rápido de esta página"
               aria-label="Salida rápida"
             >
@@ -1344,9 +1352,9 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
 
         {/* Mobile Segmented Switcher (prevents top-row brand clipping and maximizes reachability) */}
         {verifiedSchool?.inspira_enabled !== false && (
-          <div className="sm:hidden px-4 pb-3">
+          <div className="sm:hidden px-3 sm:px-4 pb-2.5 pt-0.5">
             <div
-              className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-slate-100/90 border border-slate-200/80"
+              className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800"
               role="tablist"
               aria-label="Navegación principal móvil"
             >
@@ -1358,14 +1366,14 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                   setErrorMsg(null);
                   setScreen(verifiedSchool ? 'category' : 'welcome');
                 }}
-                className={`min-h-[42px] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                className={`min-h-[42px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition ${
                   screen !== 'inspira'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200/60 dark:border-slate-700/60'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-                <span>Buzón seguro</span>
+                <ShieldCheck className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0" />
+                <span className="tracking-tight">Buzón seguro</span>
               </button>
               <button
                 type="button"
@@ -1377,14 +1385,14 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                   setScreen('inspira');
                 }}
                 style={screen === 'inspira' ? { backgroundColor: activeAccent } : undefined}
-                className={`min-h-[42px] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                className={`min-h-[42px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition ${
                   screen === 'inspira'
                     ? 'text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-900'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                <span>Espacio Inspira</span>
+                <Sparkles className="w-4 h-4 shrink-0" />
+                <span className="tracking-tight">Espacio Inspira</span>
               </button>
             </div>
           </div>
