@@ -5,7 +5,7 @@ export type MoodType = 'tranquilo' | 'preocupado' | 'triste' | 'excluido' | 'en_
 
 export type SpaceTag = string;
 
-export type CounselorRole = 'psychologist' | 'tutor' | 'admin';
+export type CounselorRole = 'director' | 'coordinator_toe' | 'psychologist' | 'tutor' | 'admin';
 export type ShiftType = 'manana' | 'tarde' | 'completo';
 export type CounselorAvailability = 'available' | 'busy' | 'off_duty';
 export type SlaStatus = 'ok' | 'warning' | 'breached';

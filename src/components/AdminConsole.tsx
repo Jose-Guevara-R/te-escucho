@@ -14,6 +14,7 @@ import {
   LogOut,
   MapPin,
   PauseCircle,
+  Phone,
   PhoneCall,
   PlayCircle,
   Plus,
@@ -48,6 +49,7 @@ import type {
   PlatformCatalog,
   RiskLevel,
   School,
+  ShiftType,
   TicketSummary,
 } from '../types';
 import { resetDemoQuotaUses } from './DemoTourBar';
@@ -76,9 +78,11 @@ type SchoolEditorTab =
 type SchoolFilter = 'all' | 'active' | 'paused';
 
 const ROLE_LABELS: Array<{ id: CounselorRole; label: string }> = [
-  { id: 'psychologist', label: 'Psicólogo' },
-  { id: 'tutor', label: 'Tutor' },
-  { id: 'admin', label: 'Admin Colegio' },
+  { id: 'director', label: 'Director / Directora' },
+  { id: 'coordinator_toe', label: 'Coordinador/a de Tutoría (TOE)' },
+  { id: 'psychologist', label: 'Psicólogo/a Escolar' },
+  { id: 'tutor', label: 'Docente Tutor/a de Aula' },
+  { id: 'admin', label: 'Administrador/a de Colegio' },
 ];
 
 const ACCENT_PALETTE = [
@@ -136,7 +140,12 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [newMemberPassword, setNewMemberPassword] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState<'psychologist' | 'tutor' | 'admin'>('psychologist');
+  const [newMemberRole, setNewMemberRole] = useState<CounselorRole>('coordinator_toe');
+  const [newMemberShift, setNewMemberShift] = useState<ShiftType>('manana');
+  const [newMemberGrade, setNewMemberGrade] = useState('');
+  const [newMemberSection, setNewMemberSection] = useState('');
+  const [newMemberPhone, setNewMemberPhone] = useState('');
+  const [newMemberRespLabel, setNewMemberRespLabel] = useState('');
   const [addingMember, setAddingMember] = useState(false);
   const [resetPasswordTarget, setResetPasswordTarget] = useState<string | null>(null);
   const [resetPasswordValue, setResetPasswordValue] = useState('');
@@ -214,7 +223,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   const [wizAdminName, setWizAdminName] = useState('');
   const [wizAdminEmail, setWizAdminEmail] = useState('');
   const [wizAdminPass, setWizAdminPass] = useState('');
-  const [wizAdminRole, setWizAdminRole] = useState<'admin' | 'psychologist' | 'tutor'>('admin');
+  const [wizAdminRole, setWizAdminRole] = useState<CounselorRole>('director');
   const [creatingSchool, setCreatingSchool] = useState(false);
 
   const showSuccess = (msg: string) => {
@@ -491,6 +500,11 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           email: newMemberEmail,
           password: newMemberPassword,
           role: newMemberRole,
+          shift: newMemberShift,
+          grade: newMemberRole === 'tutor' ? newMemberGrade || undefined : undefined,
+          section: newMemberRole === 'tutor' ? newMemberSection || undefined : undefined,
+          phone_whatsapp: newMemberPhone || undefined,
+          responsabilidad_label: newMemberRespLabel || undefined,
         }),
       });
       const data = await res.json();
@@ -498,6 +512,12 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       setNewMemberName('');
       setNewMemberEmail('');
       setNewMemberPassword('');
+      setNewMemberRole('coordinator_toe');
+      setNewMemberShift('manana');
+      setNewMemberGrade('');
+      setNewMemberSection('');
+      setNewMemberPhone('');
+      setNewMemberRespLabel('');
       await loadSchoolTeam(draftSchool.id);
       await fetchOverview();
       showSuccess(`Cuenta creada para ${data.counselor.full_name}.`);
@@ -1520,12 +1540,17 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                                     <p className="text-xs text-slate-500">
                                       <span className="font-mono">{member.email}</span>
                                       <span aria-hidden="true"> · </span>
-                                      <span>
-                                        {member.role === 'admin'
-                                          ? 'Administrador de colegio'
-                                          : member.role === 'psychologist'
-                                            ? 'Psicólogo'
-                                            : 'Tutor'}
+                                      <span className="font-medium text-slate-800">
+                                        {ROLE_LABELS.find((r) => r.id === member.role)?.label ||
+                                          (member.role === 'director'
+                                            ? 'Director/a'
+                                            : member.role === 'coordinator_toe'
+                                              ? 'Coord. TOE'
+                                              : member.role === 'admin'
+                                                ? 'Admin Colegio'
+                                                : member.role === 'psychologist'
+                                                  ? 'Psicólogo'
+                                                  : 'Tutor')}
                                       </span>
                                       <span aria-hidden="true"> · </span>
                                       <span
@@ -1536,6 +1561,21 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                                         {member.active ? 'Activo' : 'Desactivado'}
                                       </span>
                                     </p>
+                                    {(member.responsabilidad_label || member.shift || member.grade) && (
+                                      <p className="text-[11px] text-teal-700 font-medium mt-0.5 flex items-center gap-1.5">
+                                        <Users className="w-3 h-3 shrink-0" />
+                                        <span>{member.responsabilidad_label || ''}</span>
+                                        <span>{member.shift === 'manana' ? '· Turno Mañana' : member.shift === 'tarde' ? '· Turno Tarde' : member.shift === 'completo' ? '· Ambos Turnos' : ''}</span>
+                                        {member.grade && <span>· {member.grade}{member.section ? member.section : ''}</span>}
+                                      </p>
+                                    )}
+                                    {member.phone_whatsapp && (
+                                      <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                                        <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
+                                        <span className="font-mono">{member.phone_whatsapp.replace(/(\d{2})(\d+)(\d{3})/, '$1 *** $3')}</span>
+                                        <span className="text-emerald-700 font-medium">WhatsApp ✓</span>
+                                      </p>
+                                    )}
                                     {resetPasswordTarget === member.id && (
                                       <div className="mt-2.5 flex items-center gap-2">
                                         <input
@@ -1637,16 +1677,52 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                               <select
                                 value={newMemberRole}
                                 onChange={(e) =>
-                                  setNewMemberRole(
-                                    e.target.value as 'psychologist' | 'tutor' | 'admin'
-                                  )
+                                  setNewMemberRole(e.target.value as CounselorRole)
                                 }
                                 className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
                               >
-                                <option value="psychologist">Psicólogo / Orientador</option>
-                                <option value="tutor">Tutor de convivencia</option>
-                                <option value="admin">Administrador de colegio</option>
+                                <option value="director">Director / Directora</option>
+                                <option value="coordinator_toe">Coordinador/a de Tutoría (TOE)</option>
+                                <option value="psychologist">Psicólogo/a Escolar</option>
+                                <option value="tutor">Docente Tutor/a de Aula</option>
+                                <option value="admin">Administrador/a de Colegio</option>
                               </select>
+                              {/* Turno */}
+                              <select
+                                value={newMemberShift}
+                                onChange={(e) => setNewMemberShift(e.target.value as ShiftType)}
+                                className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                              >
+                                <option value="manana">Turno Mañana</option>
+                                <option value="tarde">Turno Tarde</option>
+                                <option value="completo">Jornada Completa</option>
+                              </select>
+                              {/* WhatsApp */}
+                              <input
+                                type="tel"
+                                value={newMemberPhone}
+                                onChange={(e) => setNewMemberPhone(e.target.value)}
+                                placeholder="WhatsApp (ej. 51987654321)"
+                                className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                              />
+                              {newMemberRole === 'tutor' && (
+                                <>
+                                  <input
+                                    type="text"
+                                    value={newMemberGrade}
+                                    onChange={(e) => setNewMemberGrade(e.target.value)}
+                                    placeholder="Grado (ej. 3ro)"
+                                    className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={newMemberSection}
+                                    onChange={(e) => setNewMemberSection(e.target.value)}
+                                    placeholder='Sección (ej. "A")'
+                                    className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                                  />
+                                </>
+                              )}
                             </div>
 
                             <button
@@ -3710,7 +3786,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 <div className="space-y-3.5">
                   <div className="p-3 rounded-xl bg-sky-50 border border-sky-200 text-xs text-slate-700">
                     <Users className="w-4 h-4 text-teal-700 inline mr-1.5" />
-                    Crea la cuenta inicial del psicólogo o coordinador del colegio (también puedes añadir más cuentas después).
+                    Crea la cuenta inicial del responsable TOE del colegio: Director/a, Coordinador/a TOE, Psicólogo/a o Tutor/a. Puedes añadir más cuentas después.
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -3733,13 +3809,15 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                       <select
                         value={wizAdminRole}
                         onChange={(e) =>
-                          setWizAdminRole(e.target.value as 'admin' | 'psychologist' | 'tutor')
+                          setWizAdminRole(e.target.value as CounselorRole)
                         }
                         className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs"
                       >
-                        <option value="admin">Administrador de colegio</option>
-                        <option value="psychologist">Psicólogo</option>
-                        <option value="tutor">Tutor</option>
+                        <option value="director">Director / Directora</option>
+                        <option value="coordinator_toe">Coordinador/a TOE</option>
+                        <option value="psychologist">Psicólogo/a Escolar</option>
+                        <option value="tutor">Docente Tutor/a</option>
+                        <option value="admin">Administrador/a de Colegio</option>
                       </select>
                     </div>
                   </div>

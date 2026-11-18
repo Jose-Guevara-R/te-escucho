@@ -680,7 +680,7 @@ function createInitialData(): DatabaseSchema {
       email: 'coordinacion@colegio.edu.pe',
       password_hash: hashSecret(defaultStaffPassword),
       full_name: 'Mg. Ricardo Paredes',
-      role: 'admin',
+      role: 'director',
       active: true,
       availability: 'available',
       school_name: 'Colegio San José',
@@ -695,7 +695,7 @@ function createInitialData(): DatabaseSchema {
       email: 'psicologia@colegio.edu.pe',
       password_hash: hashSecret(defaultStaffPassword),
       full_name: 'Lic. María Fernández',
-      role: 'psychologist',
+      role: 'coordinator_toe',
       active: true,
       availability: 'available',
       school_name: 'Colegio San José',
@@ -705,12 +705,27 @@ function createInitialData(): DatabaseSchema {
       responsabilidad_label: 'Coordinadora de Tutoría (TOE) - Turno Mañana',
     },
     {
+      id: 'counselor-psi-sj-1',
+      school_id: sanJoseId,
+      email: 'psico@sanjose.edu.pe',
+      password_hash: hashSecret(defaultStaffPassword),
+      full_name: 'Lic. Carmen Flores',
+      role: 'psychologist',
+      active: true,
+      availability: 'available',
+      school_name: 'Colegio San José',
+      school_access_code: 'SANJOSE2026',
+      shift: 'completo',
+      phone_whatsapp: '+51 901 234 567',
+      responsabilidad_label: 'Psicología Escolar',
+    },
+    {
       id: 'counselor-toe-tarde',
       school_id: sanJoseId,
       email: 'toe.tarde@colegio.edu.pe',
       password_hash: hashSecret(defaultStaffPassword),
       full_name: 'Lic. Patricia Vega',
-      role: 'psychologist',
+      role: 'coordinator_toe',
       active: true,
       availability: 'available',
       school_name: 'Colegio San José',
@@ -983,12 +998,15 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
   const rawCounselors = Array.isArray(raw.counselors) ? raw.counselors : [];
   const counselors: CounselorRecord[] = rawCounselors.map((c) => {
     if (typeof c.active !== 'boolean' || !c.availability || !c.phone_whatsapp || !c.shift) changed = true;
-    const phone = c.phone_whatsapp || (c.role === 'admin' ? '+51 999 111 222' : c.role === 'psychologist' ? '+51 988 222 333' : '+51 977 333 444');
-    const shift = c.shift || (c.role === 'admin' ? 'completo' : 'manana');
+    const phone = c.phone_whatsapp || (c.role === 'director' ? '+51 999 111 222' : c.role === 'admin' ? '+51 999 111 222' : c.role === 'coordinator_toe' ? '+51 988 222 333' : c.role === 'psychologist' ? '+51 901 234 567' : '+51 977 333 444');
+    const shift = c.shift || (c.role === 'director' || c.role === 'admin' ? 'completo' : 'manana');
     const resp = c.responsabilidad_label || (
-      c.role === 'admin' ? 'Dirección General (Comité de Bienestar)' :
+      c.role === 'director' ? 'Dirección General' :
+      c.role === 'admin' ? 'Administración del Colegio' :
+      c.role === 'coordinator_toe' ? `Coordinación TOE${c.shift === 'tarde' ? ' - Tarde' : c.shift === 'manana' ? ' - Mañana' : ''}` :
+      c.role === 'psychologist' ? 'Psicología Escolar' :
       c.role === 'tutor' ? `Tutor ${c.grade || '3°'} ${c.section || 'B'}`.trim() :
-      'Coordinación de Tutoría (TOE)'
+      'Orientación Escolar'
     );
     return {
       ...c,
@@ -1007,7 +1025,15 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
     process.env.INITIAL_STAFF_PASSWORD || 'SanJose2026!';
   const sanJoseSchool = schools.find((s) => s.id === 'school-san-jose-2026');
   if (sanJoseSchool) {
-    if (!counselors.some((c) => c.school_id === sanJoseSchool.id && c.role === 'admin' && c.active)) {
+    // Upgrade any old 'admin' role for Ricardo Paredes to 'director'
+    counselors.forEach((c) => {
+      if (c.school_id === sanJoseSchool.id && c.email.toLowerCase() === 'coordinacion@colegio.edu.pe' && c.role === 'admin') {
+        c.role = 'director';
+        changed = true;
+      }
+    });
+
+    if (!counselors.some((c) => c.school_id === sanJoseSchool.id && (c.role === 'director' || c.role === 'admin') && c.active)) {
       changed = true;
       counselors.push({
         id: 'counselor-admin-sj',
@@ -1015,7 +1041,7 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
         email: 'coordinacion@colegio.edu.pe',
         password_hash: hashSecret(defaultStaffPassword),
         full_name: 'Mg. Ricardo Paredes',
-        role: 'admin',
+        role: 'director',
         active: true,
         availability: 'available',
         school_name: sanJoseSchool.name,
@@ -1025,6 +1051,16 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
         responsabilidad_label: 'Dirección General (Comité de Bienestar)',
       });
     }
+
+    // Upgrade any old 'psychologist' that is actually a coordinator
+    counselors.forEach((c) => {
+      if (c.school_id === sanJoseSchool.id && c.role === 'psychologist' &&
+          (c.email.toLowerCase() === 'psicologia@colegio.edu.pe' || c.email.toLowerCase() === 'toe.tarde@colegio.edu.pe')) {
+        c.role = 'coordinator_toe';
+        changed = true;
+      }
+    });
+
     if (!counselors.some((c) => c.school_id === sanJoseSchool.id && c.email.toLowerCase() === 'toe.tarde@colegio.edu.pe')) {
       changed = true;
       counselors.push({
@@ -1033,7 +1069,7 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
         email: 'toe.tarde@colegio.edu.pe',
         password_hash: hashSecret(defaultStaffPassword),
         full_name: 'Lic. Patricia Vega',
-        role: 'psychologist',
+        role: 'coordinator_toe',
         active: true,
         availability: 'available',
         school_name: sanJoseSchool.name,
@@ -1041,6 +1077,26 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
         shift: 'tarde',
         phone_whatsapp: '+51 988 444 555',
         responsabilidad_label: 'Coordinadora de Tutoría (TOE) - Turno Tarde',
+      });
+    }
+
+    // Ensure there is a dedicated psychologist
+    if (!counselors.some((c) => c.school_id === sanJoseSchool.id && c.role === 'psychologist' && c.active)) {
+      changed = true;
+      counselors.push({
+        id: 'counselor-psi-sj-1',
+        school_id: sanJoseSchool.id,
+        email: 'psico@sanjose.edu.pe',
+        password_hash: hashSecret(defaultStaffPassword),
+        full_name: 'Lic. Carmen Flores',
+        role: 'psychologist',
+        active: true,
+        availability: 'available',
+        school_name: sanJoseSchool.name,
+        school_access_code: sanJoseSchool.access_code,
+        shift: 'completo',
+        phone_whatsapp: '+51 901 234 567',
+        responsabilidad_label: 'Psicología Escolar',
       });
     }
   }
@@ -1353,11 +1409,15 @@ class TeEscuchoStore {
         section: c.section || '',
         responsabilidad_label:
           c.responsabilidad_label ||
-          (c.role === 'admin'
+          (c.role === 'director' || c.role === 'admin'
             ? 'Dirección General (Comité de Bienestar)'
-            : c.role === 'tutor'
-              ? `Tutor ${c.grade || ''} ${c.section || ''}`.trim()
-              : 'Coordinación de Tutoría (TOE)'),
+            : c.role === 'coordinator_toe'
+              ? `Coordinación TOE (${c.shift === 'tarde' ? 'Tarde' : c.shift === 'completo' ? 'Ambos Turnos' : 'Mañana'})`
+              : c.role === 'psychologist'
+                ? 'Psicología y Bienestar Escolar'
+                : c.role === 'tutor'
+                  ? `Tutor ${c.grade || ''} ${c.section || ''}`.trim() || 'Docente Tutor'
+                  : 'Orientación'),
       }));
   }
 
@@ -2442,8 +2502,8 @@ class TeEscuchoStore {
       // Escalación Tier 1: A la Coordinación de TOE
       if (currentTier < 1 && elapsedMin >= tier1Threshold) {
         const coord =
-          schoolCounselors.find((c) => c.active && c.role === 'psychologist' && c.phone_whatsapp) ||
-          schoolCounselors.find((c) => c.active && c.role === 'admin' && c.phone_whatsapp);
+          schoolCounselors.find((c) => c.active && (c.role === 'coordinator_toe' || c.role === 'psychologist') && c.phone_whatsapp) ||
+          schoolCounselors.find((c) => c.active && (c.role === 'director' || c.role === 'admin') && c.phone_whatsapp);
 
         if (coord && coord.phone_whatsapp) {
           ticket.cascade_notified_tier = 1;
@@ -2463,7 +2523,7 @@ class TeEscuchoStore {
       // Escalación Tier 2: A Dirección / Administración
       else if (currentTier < 2 && elapsedMin >= tier2Threshold) {
         const director =
-          schoolCounselors.find((c) => c.active && c.role === 'admin' && c.phone_whatsapp) ||
+          schoolCounselors.find((c) => c.active && (c.role === 'director' || c.role === 'admin') && c.phone_whatsapp) ||
           schoolCounselors.find((c) => c.active && c.phone_whatsapp);
 
         if (director && director.phone_whatsapp) {
@@ -2506,8 +2566,15 @@ class TeEscuchoStore {
       );
     if (!cat || !Array.isArray(cat.allowed_roles) || cat.allowed_roles.length === 0) {
       // Fail-safe restriction when category was renamed or removed
-      return role === 'psychologist' || role === 'admin';
+      return (
+        role === 'psychologist' ||
+        role === 'admin' ||
+        role === 'director' ||
+        role === 'coordinator_toe'
+      );
     }
+    if (role === 'director' || role === 'admin') return true;
+    if (role === 'coordinator_toe' && cat.allowed_roles.includes('psychologist')) return true;
     return cat.allowed_roles.includes(role);
   }
 
@@ -3418,11 +3485,15 @@ class TeEscuchoStore {
 
     const defaultRespLabel =
       input.responsabilidad_label?.trim() ||
-      (input.role === 'admin'
-        ? 'Dirección General'
-        : input.role === 'tutor'
-          ? `Tutor ${input.grade || ''} ${input.section || ''}`.trim() || 'Docente Tutor'
-          : 'Coordinación de Tutoría (TOE)');
+      (input.role === 'director'
+        ? 'Dirección General (Comité de Bienestar)'
+        : input.role === 'coordinator_toe'
+          ? `Coordinación de Tutoría (TOE) - ${input.shift === 'tarde' ? 'Turno Tarde' : input.shift === 'completo' ? 'Ambos Turnos' : 'Turno Mañana'}`
+          : input.role === 'psychologist'
+            ? 'Psicología y Apoyo Socioemocional'
+            : input.role === 'tutor'
+              ? `Tutor ${input.grade || ''} ${input.section || ''}`.trim() || 'Docente Tutor'
+              : 'Administración de Colegio');
 
     const record: CounselorRecord = {
       id: `counselor-${crypto.randomUUID().slice(0, 8)}`,

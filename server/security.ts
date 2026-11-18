@@ -29,7 +29,13 @@ const VALID_TICKET_OUTCOMES = new Set<TicketOutcome>([
   'falsa_alerta',
   'otro',
 ]);
-const VALID_COUNSELOR_ROLES = new Set<CounselorRole>(['psychologist', 'tutor', 'admin']);
+const VALID_COUNSELOR_ROLES = new Set<CounselorRole>([
+  'director',
+  'coordinator_toe',
+  'psychologist',
+  'tutor',
+  'admin',
+]);
 const VALID_AVAILABILITIES = new Set<CounselorAvailability>(['available', 'busy', 'off_duty']);
 const VALID_PACE_MODES = new Set<StudentPaceMode>(['discreet_help', 'listen_only']);
 const VALID_EMPATHY_TONES = new Set<EmpathyTone>([
