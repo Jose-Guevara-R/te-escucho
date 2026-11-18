@@ -33,6 +33,16 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Safe-area insets para barras nativas de Android y notch */
+  header {
+    padding-top: max(env(safe-area-inset-top, 0px), 0px);
+  }
+
+  footer,
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+  }
 }
 
 /* ==========================================================================

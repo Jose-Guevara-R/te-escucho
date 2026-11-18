@@ -969,7 +969,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
         </header>
 
         {/* Thread Area */}
-        <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-5 flex flex-col">
+        <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-5 pb-[max(2rem,calc(env(safe-area-inset-bottom,0px)+1.5rem))] flex flex-col safe-area-bottom">
           <div className="mb-3 pb-3 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span>
               Motivo: <strong className="text-slate-700">{createdTicket.category}</strong> ·{' '}
@@ -1392,7 +1392,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
       </header>
 
       {/* Main Responsive Canvas */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 flex items-center">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 pb-[max(3rem,calc(env(safe-area-inset-bottom,0px)+2rem))] flex items-center safe-area-bottom">
         {screen === 'welcome' && (
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             {/* Left Column: Empathetic Context + Daily Emotional Thermometer */}

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { AdminConsole } from './components/AdminConsole';
 import { AdminLogin } from './components/AdminLogin';
 import { CounselorLogin } from './components/CounselorLogin';
@@ -92,6 +94,14 @@ export default function App() {
       window.history.replaceState({}, '', '/');
     }
     setMode('student');
+  }, []);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+      StatusBar.setBackgroundColor({ color: '#090E1A' }).catch(() => {});
+      StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+    }
   }, []);
 
   useEffect(() => {
