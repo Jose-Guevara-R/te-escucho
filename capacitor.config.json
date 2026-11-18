@@ -1,0 +1,15 @@
+{
+  "appId": "pe.teescucho.app",
+  "appName": "Te Escucho",
+  "webDir": "dist",
+  "server": {
+    "url": "https://te-escucho-2rl4.onrender.com",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

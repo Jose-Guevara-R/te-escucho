@@ -15,3 +15,7 @@ dev-dist/
 *.tmp
 backups/
 backup/
+*.apk
+android/local.properties
+android/.gradle/
+android/app/build/
