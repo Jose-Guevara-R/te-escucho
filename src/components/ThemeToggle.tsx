@@ -66,11 +66,14 @@ export function ThemeToggle({ variant = 'floating', className = '' }: ThemeToggl
   }
 
   return (
-    <div className={`fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 print:hidden ${className}`}>
+    <div
+      className={`fixed bottom-24 right-4 sm:bottom-28 sm:right-6 z-40 print:hidden ${className}`}
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
       <button
         type="button"
         onClick={handleToggle}
-        className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 active:scale-95 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-100 hover:border-teal-500/50 dark:hover:border-teal-400/50"
+        className="group flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-2.5 rounded-full shadow-2xl transition-all duration-300 active:scale-95 bg-slate-900/90 dark:bg-slate-800/95 text-slate-100 backdrop-blur-md border border-slate-700/80 hover:border-teal-400/60 hover:shadow-teal-500/20"
         title={isDark ? 'Cambiar a modo día' : 'Cambiar a modo noche'}
         aria-label={isDark ? 'Activar modo día' : 'Activar modo noche'}
       >
@@ -78,10 +81,10 @@ export function ThemeToggle({ variant = 'floating', className = '' }: ThemeToggl
           {isDark ? (
             <Sun className="w-4 h-4 text-amber-400 transition-transform duration-300 group-hover:rotate-90" />
           ) : (
-            <Moon className="w-4 h-4 text-teal-600 transition-transform duration-300 group-hover:-rotate-12" />
+            <Moon className="w-4 h-4 text-teal-400 transition-transform duration-300 group-hover:-rotate-12" />
           )}
         </div>
-        <span className="text-xs font-semibold tracking-tight text-slate-700 dark:text-slate-200">
+        <span className="text-xs font-semibold tracking-tight text-slate-200">
           {isDark ? 'Modo Día' : 'Modo Noche'}
         </span>
       </button>

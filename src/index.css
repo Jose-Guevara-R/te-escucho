@@ -37,11 +37,11 @@
 
 /* ==========================================================================
    MODO OSCURO PREMIUM — ELEVACIÓN, ALTO CONTRASTE Y TIPOGRAFÍA CRISTALINA
-   Inspirado en los estándares de accesibilidad visual de Linear, Apple y Vercel
+   Asegura legibilidad 100% en todas las pantallas (Buzón, Inspira, Orientador, Admin)
    ========================================================================== */
 
 html.dark {
-  /* ── 1. Fondo Global y Anulación de Gradientes Claros ─────────────────── */
+  /* ── 1. Fondo Global y Anulación Universal de Gradientes Claros ─────────── */
   background-color: #070a11 !important;
 
   body,
@@ -50,121 +50,197 @@ html.dark {
     color: #f1f5f9 !important;
   }
 
-  /* Anula cualquier gradiente claro (sky-50, slate-50, emerald-50) convirtiéndolo en un fondo oscuro espacial profundo */
+  /* Anula cualquier gradiente claro en toda la app convirtiéndolo en fondo espacial profundo */
   [class*="bg-gradient-to-"] {
     background-image: linear-gradient(180deg, #090e1a 0%, #070a11 60%, #05070c 100%) !important;
     background-color: #070a11 !important;
   }
 
   /* ── 2. Header y Barras de Navegación ────────────────────────────────── */
-  header {
+  header,
+  nav[role="navigation"],
+  [class*="sticky top-0"] {
     background-color: rgba(9, 14, 26, 0.94) !important;
     border-color: #1a2436 !important;
   }
 
-  /* ── 3. Tarjetas, Paneles y Contenedores ──────────────────────────────── */
-  .bg-white {
-    background-color: #0e1526 !important;
-    border-color: #1c273c !important;
+  /* ── 3. Contenedores, Tarjetas y Secciones con opacidades (TODAS las variantes) ── */
+  /* Tarjetas blancas principales */
+  [class*="bg-white"] {
+    background-color: #0c1220 !important;
+    border-color: #1a2538 !important;
   }
 
-  .bg-white\/80,
-  .bg-white\/85,
-  .bg-white\/90,
-  .bg-white\/95 {
-    background-color: rgba(14, 21, 38, 0.92) !important;
-    border-color: #1c273c !important;
+  /* Variantes slate */
+  [class*="bg-slate-50"] {
+    background-color: #080d19 !important;
+    border-color: #1a2538 !important;
   }
 
-  .bg-slate-50,
-  .bg-slate-50\/50,
-  .bg-slate-50\/60,
-  .bg-slate-50\/80,
-  .bg-slate-50\/90 {
-    background-color: #0b1120 !important;
-    border-color: #1c273c !important;
+  [class*="bg-slate-100"] {
+    background-color: #0f172a !important;
+    border-color: #1e293b !important;
   }
 
-  .bg-slate-100,
-  .bg-slate-100\/80,
-  .bg-slate-100\/90 {
-    background-color: #131c30 !important;
-    border-color: #1f2d45 !important;
+  [class*="bg-slate-200"] {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
   }
 
-  .bg-slate-200 {
-    background-color: #1c273c !important;
+  /* Variantes de color pastel con cualquier opacidad (/80, /60, etc.) */
+  [class*="bg-sky-50"],
+  [class*="bg-sky-100"] {
+    background-color: #0c1829 !important;
+    border-color: #1e3555 !important;
   }
 
-  /* Bordes y separadores */
-  .border-slate-100,
-  .border-slate-200,
-  .border-slate-200\/60,
-  .border-slate-200\/80,
-  .border-slate-200\/90,
-  .border-slate-300 {
-    border-color: #1c273c !important;
+  [class*="bg-teal-50"],
+  [class*="bg-teal-100"] {
+    background-color: #061c20 !important;
+    border-color: #0f444c !important;
   }
 
-  .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-  .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
-    border-color: #1c273c !important;
+  [class*="bg-emerald-50"],
+  [class*="bg-emerald-100"] {
+    background-color: #061f19 !important;
+    border-color: #0f4738 !important;
+  }
+
+  [class*="bg-amber-50"],
+  [class*="bg-amber-100"] {
+    background-color: #211906 !important;
+    border-color: #5c430a !important;
+  }
+
+  [class*="bg-rose-50"],
+  [class*="bg-rose-100"] {
+    background-color: #210810 !important;
+    border-color: #541427 !important;
+  }
+
+  /* Bordes de todas las secciones */
+  [class*="border-slate-100"],
+  [class*="border-slate-200"],
+  [class*="border-slate-300"] {
+    border-color: #1a2538 !important;
+  }
+
+  [class*="border-sky-100"],
+  [class*="border-sky-200"] {
+    border-color: #1e3555 !important;
+  }
+
+  [class*="border-teal-100"],
+  [class*="border-teal-200"] {
+    border-color: #0f444c !important;
+  }
+
+  [class*="border-emerald-100"],
+  [class*="border-emerald-200"] {
+    border-color: #0f4738 !important;
+  }
+
+  [class*="border-amber-100"],
+  [class*="border-amber-200"] {
+    border-color: #5c430a !important;
+  }
+
+  [class*="border-rose-100"],
+  [class*="border-rose-200"] {
+    border-color: #541427 !important;
   }
 
   /* ── 4. Tipografía y Jerarquía Visual de Textos (ALTO CONTRASTE) ──────── */
-  /* Títulos principales: Blanco puro brillante */
-  .text-slate-950,
-  .text-slate-900,
-  .text-slate-800 {
+  /* Títulos y textos destacados: Blanco puro radiante */
+  h1, h2, h3, h4,
+  [class*="text-slate-950"],
+  [class*="text-slate-900"],
+  [class*="text-slate-800"] {
     color: #ffffff !important;
   }
 
-  /* Textos secundarios y párrafos: Gris claro nítido y descansado */
-  .text-slate-700 {
+  /* Párrafos y descripciones: Slate claro de lectura descansada */
+  p,
+  [class*="text-slate-700"] {
     color: #e2e8f0 !important;
   }
 
-  .text-slate-600 {
+  [class*="text-slate-600"] {
     color: #cbd5e1 !important;
   }
 
-  /* Textos terciarios y etiquetas: Slate medio de fácil lectura */
-  .text-slate-500 {
+  /* Textos secundarios y leyendas */
+  [class*="text-slate-500"],
+  [class*="text-slate-400"] {
     color: #94a3b8 !important;
   }
 
-  .text-slate-400 {
-    color: #94a3b8 !important;
+  /* ── 5. Acentos Semánticos Vivos ─────────────────────────────────────── */
+  /* Turquesa / Teal (Identidad de marca) */
+  [class*="text-teal-950"],
+  [class*="text-teal-900"],
+  [class*="text-teal-800"],
+  [class*="text-teal-700"] {
+    color: #2dd4bf !important;
   }
 
-  /* ── 5. Acentos Semánticos Adaptados a Fondo Oscuro ──────────────────── */
-  /* TEAL / TURQUESA (Identidad de Te Escucho) */
-  .text-teal-950,
-  .text-teal-900,
-  .text-teal-800,
-  .text-teal-700 {
-    color: #2dd4bf !important; /* Turquesa brillante, alta legibilidad */
-  }
-
-  .text-teal-600 {
+  [class*="text-teal-600"] {
     color: #5eead4 !important;
   }
 
-  .bg-teal-50,
-  .bg-teal-50\/40,
-  .bg-teal-50\/50,
-  .bg-teal-50\/80,
-  .bg-teal-50\/90 {
-    background-color: rgba(13, 148, 136, 0.16) !important;
-    border-color: rgba(45, 212, 191, 0.3) !important;
+  /* Rose / Rojo (SOS, Líneas de Emergencia) */
+  [class*="text-rose-950"],
+  [class*="text-rose-900"],
+  [class*="text-rose-800"],
+  [class*="text-rose-700"],
+  [class*="text-rose-600"] {
+    color: #fb7185 !important;
   }
 
-  .border-teal-100,
-  .border-teal-200,
-  .border-teal-300 {
-    border-color: rgba(45, 212, 191, 0.3) !important;
+  /* Amber / Amarillo (Modo Celular Prestado, Alertas) */
+  [class*="text-amber-950"],
+  [class*="text-amber-900"],
+  [class*="text-amber-800"],
+  [class*="text-amber-700"] {
+    color: #fde047 !important;
   }
 
+  /* Emerald / Verde (Confirmaciones, Éxito) */
+  [class*="text-emerald-950"],
+  [class*="text-emerald-900"],
+  [class*="text-emerald-800"],
+  [class*="text-emerald-700"] {
+    color: #34d399 !important;
+  }
+
+  /* Sky / Azul (Información) */
+  [class*="text-sky-950"],
+  [class*="text-sky-900"],
+  [class*="text-sky-800"],
+  [class*="text-sky-700"] {
+    color: #38bdf8 !important;
+  }
+
+  /* ── 6. Botones Secundarios, Píldoras y Enlaces de Acción ─────────────── */
+  button[class*="bg-white"],
+  a[class*="bg-white"],
+  button[class*="border-slate-"],
+  a[class*="border-slate-"] {
+    background-color: #131c2e !important;
+    border-color: #22324e !important;
+    color: #f1f5f9 !important;
+  }
+
+  button[class*="bg-white"]:hover,
+  a[class*="bg-white"]:hover,
+  button[class*="border-slate-"]:hover,
+  a[class*="border-slate-"]:hover {
+    background-color: #1a2740 !important;
+    border-color: #2dd4bf !important;
+    color: #ffffff !important;
+  }
+
+  /* Botones primarios de Teal */
   .bg-teal-700,
   .bg-teal-800 {
     background-color: #0d9488 !important;
@@ -176,106 +252,11 @@ html.dark {
     background-color: #14b8a6 !important;
   }
 
-  /* ROSE / ROJO (Emergencia, Ayuda Inmediata, SOS) */
-  .text-rose-950,
-  .text-rose-900,
-  .text-rose-800,
-  .text-rose-700,
-  .text-rose-600 {
-    color: #fb7185 !important; /* Rosa brillante, súper legible sobre negro */
-  }
-
-  .bg-rose-50,
-  .bg-rose-100 {
-    background-color: rgba(225, 29, 72, 0.16) !important;
-    border-color: rgba(251, 113, 133, 0.35) !important;
-  }
-
-  .border-rose-200,
-  .border-rose-300 {
-    border-color: rgba(251, 113, 133, 0.35) !important;
-  }
-
-  /* AMBER / AMARILLO (Modo Celular Prestado, Alertas) */
-  .text-amber-950,
-  .text-amber-900,
-  .text-amber-800,
-  .text-amber-700 {
-    color: #fde047 !important; /* Amarillo sol vibrante */
-  }
-
-  .bg-amber-50,
-  .bg-amber-50\/90,
-  .bg-amber-100 {
-    background-color: rgba(217, 119, 6, 0.18) !important;
-    border-color: rgba(245, 158, 11, 0.35) !important;
-  }
-
-  .border-amber-200,
-  .border-amber-300 {
-    border-color: rgba(245, 158, 11, 0.35) !important;
-  }
-
-  /* EMERALD / VERDE (Confirmaciones, Espacio Inspira) */
-  .text-emerald-950,
-  .text-emerald-900,
-  .text-emerald-800,
-  .text-emerald-700 {
-    color: #34d399 !important;
-  }
-
-  .bg-emerald-50,
-  .bg-emerald-100 {
-    background-color: rgba(16, 185, 129, 0.15) !important;
-    border-color: rgba(52, 211, 153, 0.3) !important;
-  }
-
-  .border-emerald-200,
-  .border-emerald-300 {
-    border-color: rgba(52, 211, 153, 0.3) !important;
-  }
-
-  /* SKY / AZUL (Información y Tags) */
-  .text-sky-950,
-  .text-sky-900,
-  .text-sky-800,
-  .text-sky-700 {
-    color: #38bdf8 !important;
-  }
-
-  .bg-sky-50,
-  .bg-sky-100 {
-    background-color: rgba(14, 165, 233, 0.15) !important;
-    border-color: rgba(56, 189, 248, 0.3) !important;
-  }
-
-  .border-sky-200,
-  .border-sky-300 {
-    border-color: rgba(56, 189, 248, 0.3) !important;
-  }
-
-  /* ── 6. Botones Secundarios, Píldoras y Termómetro Emocional ─────────── */
-  button.border-slate-200,
-  button.border-slate-300,
-  .rounded-xl.border-slate-200,
-  .rounded-2xl.border-slate-200 {
-    background-color: #121a2c !important;
-    border-color: #1e2c44 !important;
-    color: #f1f5f9 !important;
-  }
-
-  button.border-slate-200:hover,
-  button.border-slate-300:hover {
-    background-color: #19243c !important;
-    border-color: #2dd4bf !important;
-    color: #ffffff !important;
-  }
-
-  /* ── 7. Inputs y Textareas ───────────────────────────────────────────── */
+  /* ── 7. Inputs, Textareas y Selects ──────────────────────────────────── */
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {
-    background-color: #0b1120 !important;
+    background-color: #090e1a !important;
     border-color: #1f2d45 !important;
     color: #ffffff !important;
   }
@@ -298,15 +279,29 @@ html.dark {
   .shadow-md,
   .shadow-lg,
   .shadow-xl {
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.65), 0 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 0 1px 1px rgba(255, 255, 255, 0.05) !important;
   }
 
   /* ── 9. Modales y Overlays ───────────────────────────────────────────── */
   .bg-slate-900\/60,
   .bg-slate-900\/50,
-  .bg-slate-900\/40 {
-    background-color: rgba(4, 7, 14, 0.82) !important;
+  .bg-slate-900\/40,
+  [class*="backdrop-blur"] {
     backdrop-filter: blur(8px) !important;
+  }
+
+  /* ── 10. Listas de Conversaciones y Chat Bubbles (Panel Orientador / Estudiante) ── */
+  /* Burbujas del orientador en el chat */
+  .bg-teal-700.text-white {
+    background-color: #0d9488 !important;
+    color: #ffffff !important;
+  }
+
+  /* Burbujas del estudiante en el chat */
+  .bg-slate-100.text-slate-900,
+  .bg-slate-200.text-slate-900 {
+    background-color: #1a2538 !important;
+    color: #f1f5f9 !important;
   }
 }
 
