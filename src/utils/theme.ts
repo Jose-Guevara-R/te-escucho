@@ -52,3 +52,4 @@ export function toggleTheme(): ThemeMode {
   setStoredTheme(next);
   return next;
 }
+
