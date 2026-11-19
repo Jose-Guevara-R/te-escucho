@@ -122,6 +122,7 @@ export interface PublicStaffMember {
   grade?: string;
   section?: string;
   responsabilidad_label?: string;
+  initial_password?: string;
 }
 
 export interface PublicSchoolConfig {
@@ -261,6 +262,7 @@ export interface CounselorProfile {
   grade?: string;
   section?: string;
   responsabilidad_label?: string;
+  initial_password?: string;
 }
 
 export type StaffAlertThreshold = 'criticos_y_sla' | 'criticos_y_medios' | 'todos';

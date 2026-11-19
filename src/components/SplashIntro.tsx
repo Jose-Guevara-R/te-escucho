@@ -167,18 +167,27 @@ export const SplashIntro: React.FC<SplashIntroProps> = ({
       </main>
 
       {/* Bottom Zone: Progress Bar followed by Signature Creator Attribution */}
-      <footer className="relative z-10 max-w-md w-full mx-auto px-5 pb-5 sm:pb-6 space-y-3.5 text-center shrink-0">
-        <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ scaleX: prefersReducedMotion ? 1 : 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{
-              duration: effectiveDuration / 1000,
-              ease: 'linear',
-            }}
-            style={{ transformOrigin: 'left center' }}
-            className="h-full w-full bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400"
-          />
+      <footer className="relative z-10 max-w-md w-full mx-auto px-5 pb-5 sm:pb-6 space-y-3 text-center shrink-0">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes teProgressAnim {
+            0% { width: 0%; opacity: 0.7; }
+            10% { opacity: 1; }
+            100% { width: 100%; opacity: 1; }
+          }
+        ` }} />
+        <div className="space-y-1">
+          <div className="h-2 w-full bg-slate-900/90 rounded-full overflow-hidden p-[1px] border border-teal-500/40 shadow-inner">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400 shadow-[0_0_12px_rgba(20,184,166,0.9)]"
+              style={{
+                animation: `teProgressAnim ${effectiveDuration}ms linear forwards`,
+              }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-teal-300/80 font-medium px-1">
+            <span>Cargando plataforma segura</span>
+            <span>MINEDU / D.S. 018-2026</span>
+          </div>
         </div>
 
         {/* Signature Creator Attribution Plaque with Orbiting Light Beam */}

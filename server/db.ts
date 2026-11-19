@@ -1008,6 +1008,7 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
       c.role === 'tutor' ? `Tutor ${c.grade || '3°'} ${c.section || 'B'}`.trim() :
       'Orientación Escolar'
     );
+    const pass = c.initial_password || (c.school_id === 'school-san-jose-2026' ? 'SanJose2026!' : 'SantaRosa2026!');
     return {
       ...c,
       active: c.active !== false,
@@ -1017,6 +1018,7 @@ function normalizeSchema(raw: Partial<DatabaseSchema>): { data: DatabaseSchema; 
       grade: c.grade || (c.role === 'tutor' ? '3°' : ''),
       section: c.section || (c.role === 'tutor' ? 'B' : ''),
       responsabilidad_label: resp,
+      initial_password: pass,
     };
   });
 
@@ -3511,6 +3513,7 @@ class TeEscuchoStore {
       grade: input.grade?.trim() || '',
       section: input.section?.trim() || '',
       responsabilidad_label: defaultRespLabel,
+      initial_password: password,
     };
 
     this.data.counselors.push(record);
@@ -3602,6 +3605,7 @@ class TeEscuchoStore {
     }
     if (updates.new_password && updates.new_password.trim().length >= 6) {
       current.password_hash = await hashSecretAsync(updates.new_password.trim());
+      current.initial_password = updates.new_password.trim();
     }
 
     this.data.counselors[idx] = current;

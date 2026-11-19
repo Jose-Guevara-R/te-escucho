@@ -9,6 +9,7 @@ import {
   FlaskConical,
   Globe2,
   History,
+  Key,
   Layers,
   Loader2,
   LogOut,
@@ -30,6 +31,7 @@ import {
   X,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { TeEscuchoLogo } from './TeEscuchoLogo';
 import type {
   AdminOverviewData,
   AdminSchoolSummary,
@@ -531,22 +533,37 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
     const shiftLabel: Record<string, string> = {
       manana: 'Turno Mañana', tarde: 'Turno Tarde', completo: 'Jornada Completa',
     };
+    const defaultSchoolPass = draftSchool.id === 'school-san-jose-2026' ? 'SanJose2026!' : 'SantaRosa2026!';
     const allMembers = team.filter((m) => m.active);
     const rows = allMembers.map((m) => {
       const sessionEntry = sessionCredentials.find((s) => s.email === m.email);
-      const pwd = sessionEntry ? sessionEntry.password : '(contraseña establecida al crear)';
+      const pwd = m.initial_password || sessionEntry?.password || defaultSchoolPass;
       const gradeSec = m.grade ? `${m.grade}${m.section ? ' "' + m.section + '"' : ''}` : '—';
       return `
         <tr>
-          <td>${m.full_name}</td>
+          <td><strong>${m.full_name}</strong></td>
           <td>${roleLabel[m.role] || m.role}</td>
           <td>${shiftLabel[m.shift || 'manana'] || m.shift || '—'}</td>
           <td>${gradeSec}</td>
           <td style="font-family:monospace;font-size:12px">${m.email}</td>
-          <td style="font-family:monospace;font-size:12px">${pwd}</td>
+          <td style="font-family:monospace;font-size:13px;font-weight:700;color:#0f766e;background:#f0fdfa">${pwd}</td>
           <td>${m.phone_whatsapp || '—'}</td>
         </tr>`;
     }).join('');
+
+    const peruDateFull = new Intl.DateTimeFormat('es-PE', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'America/Lima',
+    }).format(new Date());
+
+    const peruDateShort = new Intl.DateTimeFormat('es-PE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'America/Lima',
+    }).format(new Date());
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -556,7 +573,8 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'Segoe UI',sans-serif;padding:32px;color:#1e293b;background:#fff}
-  .header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;border-bottom:3px solid #0d9488;padding-bottom:16px}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;border-bottom:3px solid #0d9488;padding-bottom:16px}
+  .logo-box{display:flex;align-items:center;gap:12px}
   .logo{font-size:22px;font-weight:800;color:#0d9488;letter-spacing:-0.5px}
   .logo span{color:#1e293b}
   .meta{font-size:11px;color:#64748b;text-align:right;line-height:1.6}
@@ -587,14 +605,23 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 </div>
 
 <div class="header">
-  <div>
-    <div class="logo">Te <span>Escucho</span></div>
-    <div style="font-size:11px;color:#64748b;margin-top:4px">Plataforma de Bienestar Escolar</div>
+  <div class="logo-box">
+    <svg width="44" height="44" viewBox="0 0 512 512" fill="none" style="vertical-align:middle">
+      <rect width="512" height="512" rx="116" fill="#0F766E"/>
+      <path d="M256 66L416 125V242C416 341 349 421 256 458C163 421 96 341 96 242V125L256 66Z" fill="#14B8A6" stroke="#5EEAD4" stroke-opacity="0.7" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M174 226C174 179 211 144 258 144C305 144 340 179 340 223C340 262 317 284 300 302C289 314 284 325 282 335C280 348 269 357 256 357C243 357 234 348 231 336" stroke="#E0F2FE" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M207 230C207 201 230 179 258 179C286 179 306 200 306 226C306 247 293 260 282 271" stroke="#A7F3D0" stroke-width="14" stroke-linecap="round"/>
+      <path d="M254 288C254 288 224 267 224 246C224 235 232 227 242 227C248 227 252 230 254 234C256 230 260 227 266 227C276 227 284 235 284 246C284 267 254 288 254 288Z" fill="#FDE68A"/>
+    </svg>
+    <div>
+      <div class="logo">Te <span>Escucho</span></div>
+      <div style="font-size:11px;color:#64748b;margin-top:2px">Plataforma de Bienestar Escolar · MINEDU</div>
+    </div>
   </div>
   <div class="meta">
     <strong>${draftSchool.name}</strong><br/>
     Código estudiantil: <strong>${draftSchool.access_code}</strong><br/>
-    Generado: ${new Date().toLocaleDateString('es-PE', { day:'2-digit', month:'long', year:'numeric' })}
+    Generado: ${peruDateFull}
   </div>
 </div>
 
@@ -614,7 +641,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       <th>Turno</th>
       <th>Grado / Sección</th>
       <th>Correo de Acceso</th>
-      <th>Contraseña</th>
+      <th>Contraseña Oficial</th>
       <th>WhatsApp Alertas</th>
     </tr>
   </thead>
@@ -624,11 +651,11 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 </table>
 
 <div class="warning">
-  ⚠️ <strong>Documento confidencial.</strong> No compartir por correo ni redes sociales. Entregar personalmente a cada responsable. Cambiar la contraseña inicial en el primer ingreso.
+  ⚠️ <strong>Documento confidencial.</strong> No compartir por correo ni redes sociales. Entregar personalmente a cada responsable.
 </div>
 
 <div class="footer">
-  Generado automáticamente por la Consola de Plataforma Te Escucho &nbsp;·&nbsp; ${draftSchool.name} &nbsp;·&nbsp; ${new Date().toISOString().slice(0,10)}
+  Generado automáticamente por la Plataforma Te Escucho &nbsp;·&nbsp; ${draftSchool.name} &nbsp;·&nbsp; Fecha local (Perú): ${peruDateShort}
 </div>
 
 <script>window.onload=()=>{window.print()}</script>
@@ -937,10 +964,15 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       {/* Sidebar Navigation (256px) */}
       <aside className="print:hidden w-full lg:w-64 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col shrink-0">
         <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between gap-3">
-          <span className="text-base font-extrabold tracking-tight text-slate-900 whitespace-nowrap">
-            Te Escucho
+          <div className="flex items-center gap-2.5">
+            <TeEscuchoLogo size={32} animated={false} className="shrink-0" />
+            <span className="text-base font-extrabold tracking-tight text-slate-900 whitespace-nowrap">
+              Te Escucho
+            </span>
+          </div>
+          <span className="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
+            Plataforma
           </span>
-          <span className="text-[11px] font-semibold text-slate-500">Plataforma</span>
         </div>
 
         <nav className="p-3 flex lg:flex-col gap-1 overflow-x-auto">
@@ -1761,6 +1793,13 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                                         {member.grade && <span>· {member.grade}{member.section ? member.section : ''}</span>}
                                       </p>
                                     )}
+                                    <p className="text-[11px] text-slate-600 mt-1 flex items-center gap-1.5 font-mono bg-slate-100/90 px-2 py-0.5 rounded w-fit border border-slate-200">
+                                      <Key className="w-3 h-3 text-teal-700 shrink-0" />
+                                      <span className="text-slate-500 font-sans text-[10px]">Clave oficial:</span>
+                                      <span className="font-bold text-teal-800">
+                                        {member.initial_password || (draftSchool?.id === 'school-san-jose-2026' ? 'SanJose2026!' : 'SantaRosa2026!')}
+                                      </span>
+                                    </p>
                                     {member.phone_whatsapp && (
                                       <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
                                         <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
