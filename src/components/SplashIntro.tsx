@@ -176,16 +176,25 @@ export const SplashIntro: React.FC<SplashIntroProps> = ({
 
       {/* Bottom Zone: Progress Bar followed by Signature Creator Attribution */}
       <footer className="relative z-10 max-w-md w-full mx-auto px-5 pb-5 sm:pb-6 space-y-3.5 text-center shrink-0">
-        <div className="space-y-1.5">
-          <div className="h-2.5 w-full bg-slate-950/80 rounded-full overflow-hidden p-[1px] border border-teal-500/50 shadow-inner">
+        <div className="space-y-2">
+          {/* High-Contrast Luminous Progress Track */}
+          <div className="h-3.5 w-full bg-[#041619] rounded-full overflow-hidden p-[2px] border-2 border-teal-400/70 shadow-[0_0_20px_rgba(20,184,166,0.35)]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400 shadow-[0_0_12px_rgba(20,184,166,0.9)] transition-all duration-75 ease-out"
-              style={{ width: `${Math.max(2, progress)}%` }}
+              className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-300 transition-all duration-75 ease-out"
+              style={{
+                width: `${Math.max(3, progress)}%`,
+                boxShadow: '0 0 16px #2dd4bf, 0 0 28px #14b8a6, inset 0 1px 2px rgba(255,255,255,0.8)',
+              }}
             />
           </div>
-          <div className="flex items-center justify-between text-[11px] font-medium text-teal-300/90 px-1">
-            <span>Cargando plataforma segura...</span>
-            <span className="font-mono font-bold text-emerald-300">{Math.round(progress)}%</span>
+          <div className="flex items-center justify-between text-xs font-semibold px-1">
+            <span className="text-teal-200 tracking-wide flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Cargando plataforma segura...
+            </span>
+            <span className="font-mono font-extrabold text-sm text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]">
+              {Math.round(progress)}%
+            </span>
           </div>
         </div>
 
