@@ -570,10 +570,22 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   .url-box strong{color:#0d9488}
   .warning{background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 14px;font-size:11px;color:#9a3412;margin-top:12px}
   .footer{margin-top:24px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px}
-  @media print{body{padding:16px}.warning{display:none}}
+  .actions-bar{display:flex;align-items:center;justify-content:space-between;background:#f0fdfa;border:1px solid #99f6e4;padding:12px 18px;border-radius:10px;margin-bottom:20px}
+  .btn-print{background:#0d9488;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .btn-print:hover{background:#0f766e}
+  @media print{.actions-bar{display:none}body{padding:16px}.warning{display:none}}
 </style>
 </head>
 <body>
+<div class="actions-bar">
+  <div style="font-size:12px;color:#0f766e">
+    <strong>💡 Para guardar en PDF:</strong> Pulsa el botón verde y en la ventana de impresión elige <strong>"Guardar como PDF"</strong> en la opción <em>Destino</em>.
+  </div>
+  <button class="btn-print" onclick="window.print()">
+    🖨️ Imprimir / Guardar en PDF
+  </button>
+</div>
+
 <div class="header">
   <div>
     <div class="logo">Te <span>Escucho</span></div>
@@ -1674,14 +1686,27 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                       {/* 2. TEAM CRUD */}
                       {editorTab === 'team' && (
                         <div className="space-y-6">
-                          <div>
-                            <h2 className="text-sm font-bold text-slate-900">
-                              Equipo autorizado del colegio
-                            </h2>
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              Cada cuenta solo puede visualizar y responder los casos de{' '}
-                              {draftSchool.name}.
-                            </p>
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <h2 className="text-sm font-bold text-slate-900">
+                                Equipo autorizado del colegio
+                              </h2>
+                              <p className="text-xs text-slate-500 mt-0.5">
+                                Cada cuenta solo puede visualizar y responder los casos de{' '}
+                                {draftSchool.name}.
+                              </p>
+                            </div>
+                            {team.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={handleDownloadCredentials}
+                                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+                                title="Descargar o imprimir la lista oficial de credenciales y representantes del colegio en PDF"
+                              >
+                                <Download className="w-4 h-4" />
+                                <span>Descargar lista de credenciales (PDF)</span>
+                              </button>
+                            )}
                           </div>
 
                           {loadingTeam ? (

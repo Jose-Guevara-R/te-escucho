@@ -4,6 +4,7 @@ import {
   Building2,
   Clock,
   Database,
+  Download,
   History,
   Loader2,
   MapPin,
@@ -262,6 +263,134 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
       showSuccess(`Se eliminó la cuenta de ${member.full_name}.`);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Error eliminando miembro.');
+    }
+  };
+
+  const handleDownloadCredentials = () => {
+    if (!school) return;
+    const roleLabel: Record<string, string> = {
+      director: 'Director / Directora',
+      coordinator_toe: 'Coordinador/a de Tutoría (TOE)',
+      psychologist: 'Psicólogo/a Escolar',
+      tutor: 'Docente Tutor/a de Aula',
+      admin: 'Administrador/a de Colegio',
+    };
+    const shiftLabel: Record<string, string> = {
+      manana: 'Turno Mañana',
+      tarde: 'Turno Tarde',
+      completo: 'Jornada Completa',
+    };
+    const allMembers = team.filter((m) => m.active);
+    const rows = allMembers
+      .map((m) => {
+        const gradeSec = m.grade ? `${m.grade}${m.section ? ' "' + m.section + '"' : ''}` : '—';
+        return `
+        <tr>
+          <td><strong>${m.full_name}</strong></td>
+          <td>${roleLabel[m.role] || m.role}</td>
+          <td>${shiftLabel[m.shift || 'manana'] || m.shift || '—'}</td>
+          <td>${gradeSec}</td>
+          <td style="font-family:monospace;font-size:12px">${m.email}</td>
+          <td style="font-family:monospace;font-size:12px">(establecida al crear)</td>
+          <td>${m.phone_whatsapp || '—'}</td>
+        </tr>`;
+      })
+      .join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>Credenciales – ${school.name}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',sans-serif;padding:32px;color:#1e293b;background:#fff}
+  .actions-bar{display:flex;align-items:center;justify-content:space-between;background:#f0fdfa;border:1px solid #99f6e4;padding:12px 18px;border-radius:10px;margin-bottom:20px}
+  .btn-print{background:#0d9488;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .btn-print:hover{background:#0f766e}
+  .header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;border-bottom:3px solid #0d9488;padding-bottom:16px}
+  .logo{font-size:22px;font-weight:800;color:#0d9488;letter-spacing:-0.5px}
+  .logo span{color:#1e293b}
+  .meta{font-size:11px;color:#64748b;text-align:right;line-height:1.6}
+  h1{font-size:16px;font-weight:700;color:#1e293b;margin-bottom:4px}
+  .badge{display:inline-block;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px}
+  th{background:#f8fafc;border:1px solid #e2e8f0;padding:8px 10px;text-align:left;font-size:11px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  td{border:1px solid #e2e8f0;padding:8px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#f8fafc}
+  .url-box{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:10px 14px;font-size:11px;color:#475569;margin-bottom:20px}
+  .url-box strong{color:#0d9488}
+  .warning{background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 14px;font-size:11px;color:#9a3412;margin-top:12px}
+  .footer{margin-top:24px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px}
+  @media print{.actions-bar{display:none}body{padding:16px}.warning{display:none}}
+</style>
+</head>
+<body>
+<div class="actions-bar">
+  <div style="font-size:12px;color:#0f766e">
+    <strong>💡 Para guardar en PDF:</strong> Pulsa el botón verde y en la ventana de impresión elige <strong>"Guardar como PDF"</strong> en la opción <em>Destino</em>.
+  </div>
+  <button class="btn-print" onclick="window.print()">
+    🖨️ Imprimir / Guardar en PDF
+  </button>
+</div>
+
+<div class="header">
+  <div>
+    <div class="logo">Te <span>Escucho</span></div>
+    <div style="font-size:11px;color:#64748b;margin-top:4px">Plataforma de Bienestar Escolar</div>
+  </div>
+  <div class="meta">
+    <strong>${school.name}</strong><br/>
+    Código estudiantil: <strong>${school.access_code}</strong><br/>
+    Generado: ${new Date().toLocaleDateString('es-PE', { day:'2-digit', month:'long', year:'numeric' })}
+  </div>
+</div>
+
+<h1>Directorio de Credenciales — Equipo Orientador</h1>
+<span class="badge">Uso Interno Exclusivo · Confidencial</span>
+
+<div class="url-box">
+  <strong>URL de acceso institucional:</strong>
+  https://te-escucho-2rl4.onrender.com/?openStaff=1
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Responsable</th>
+      <th>Cargo</th>
+      <th>Turno</th>
+      <th>Grado / Sección</th>
+      <th>Correo de Acceso</th>
+      <th>Contraseña</th>
+      <th>WhatsApp Alertas</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${rows || '<tr><td colspan="7" style="text-align:center;color:#94a3b8">Sin miembros activos registrados</td></tr>'}
+  </tbody>
+</table>
+
+<div class="warning">
+  ⚠️ <strong>Documento confidencial.</strong> No compartir por correo ni redes sociales. Entregar personalmente a cada responsable.
+</div>
+
+<div class="footer">
+  Generado automáticamente por la Plataforma Te Escucho &nbsp;·&nbsp; ${school.name} &nbsp;·&nbsp; ${new Date().toISOString().slice(0,10)}
+</div>
+<script>window.onload=()=>{window.print()}</script>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (!win) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `credenciales-${school.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+      a.click();
     }
   };
 
@@ -622,7 +751,23 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
 
       {/* 4. Equipo del Colegio */}
       <section className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-5">
-        <h2 className="text-sm font-bold text-slate-900">Equipo orientador de {school.short_name}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900">Equipo orientador de {school.short_name}</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Gestión de autoridades, coordinadores TOE, psicólogos y tutores</p>
+          </div>
+          {team.length > 0 && (
+            <button
+              type="button"
+              onClick={handleDownloadCredentials}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold shadow-sm transition cursor-pointer"
+              title="Descargar o imprimir la lista oficial de credenciales y representantes del colegio en PDF"
+            >
+              <Download className="w-4 h-4" />
+              <span>Descargar lista de credenciales (PDF)</span>
+            </button>
+          )}
+        </div>
 
         <div className="border border-slate-200 rounded-xl divide-y divide-slate-100">
           {team.map((member) => (
@@ -634,12 +779,17 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
                 </p>
                 <p className="text-xs text-slate-500">
                   <span className="font-mono">{member.email}</span> ·{' '}
-                  {member.role === 'admin'
-                    ? 'Dirección / Admin'
-                    : member.role === 'psychologist'
-                      ? 'Coordinador/a TOE'
-                      : 'Tutor/a'}{' '}
-                  ·{' '}
+                  <span className="font-medium text-slate-800">
+                    {member.role === 'director'
+                      ? 'Director/a General'
+                      : member.role === 'coordinator_toe'
+                        ? 'Coordinador/a TOE'
+                        : member.role === 'psychologist'
+                          ? 'Psicólogo/a Escolar'
+                          : member.role === 'tutor'
+                            ? 'Docente Tutor/a'
+                            : 'Administrador/a'}
+                  </span> ·{' '}
                   <span className={member.active ? 'text-emerald-700' : 'text-rose-700'}>
                     {member.active ? 'Activo' : 'Desactivado'}
                   </span>
@@ -720,9 +870,11 @@ export const SchoolSettingsPanel: React.FC<SchoolSettingsPanelProps> = ({
               onChange={(e) => setMemberRole(e.target.value as CounselorRole)}
               className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs"
             >
-              <option value="psychologist">Coordinador/a de TOE</option>
+              <option value="director">Director / Directora</option>
+              <option value="coordinator_toe">Coordinador/a de Tutoría (TOE)</option>
+              <option value="psychologist">Psicólogo/a Escolar</option>
               <option value="tutor">Docente Tutor/a de Aula</option>
-              <option value="admin">Dirección / Administración</option>
+              <option value="admin">Administrador/a de Colegio</option>
             </select>
             <select
               value={memberShift}
