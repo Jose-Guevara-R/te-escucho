@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { TeEscuchoLogo } from './TeEscuchoLogo';
@@ -10,15 +10,23 @@ interface SplashIntroProps {
 
 export const SplashIntro: React.FC<SplashIntroProps> = ({
   onComplete,
-  durationMs = 4800,
+  durationMs = 4500,
 }) => {
   const prefersReducedMotion = useReducedMotion();
-  const effectiveDuration = prefersReducedMotion ? 1600 : durationMs;
+  const effectiveDuration = prefersReducedMotion ? 2500 : durationMs;
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      onComplete();
-    }, effectiveDuration);
+    const startTime = performance.now();
+    const interval = window.setInterval(() => {
+      const elapsed = performance.now() - startTime;
+      const pct = Math.min(100, (elapsed / effectiveDuration) * 100);
+      setProgress(pct);
+      if (pct >= 100) {
+        window.clearInterval(interval);
+        onComplete();
+      }
+    }, 25);
 
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
@@ -28,7 +36,7 @@ export const SplashIntro: React.FC<SplashIntroProps> = ({
     window.addEventListener('keydown', handleKey);
 
     return () => {
-      window.clearTimeout(timer);
+      window.clearInterval(interval);
       window.removeEventListener('keydown', handleKey);
     };
   }, [effectiveDuration, onComplete]);
@@ -167,26 +175,17 @@ export const SplashIntro: React.FC<SplashIntroProps> = ({
       </main>
 
       {/* Bottom Zone: Progress Bar followed by Signature Creator Attribution */}
-      <footer className="relative z-10 max-w-md w-full mx-auto px-5 pb-5 sm:pb-6 space-y-3 text-center shrink-0">
-        <style dangerouslySetInnerHTML={{ __html: `
-          @keyframes teProgressAnim {
-            0% { width: 0%; opacity: 0.7; }
-            10% { opacity: 1; }
-            100% { width: 100%; opacity: 1; }
-          }
-        ` }} />
-        <div className="space-y-1">
-          <div className="h-2 w-full bg-slate-900/90 rounded-full overflow-hidden p-[1px] border border-teal-500/40 shadow-inner">
+      <footer className="relative z-10 max-w-md w-full mx-auto px-5 pb-5 sm:pb-6 space-y-3.5 text-center shrink-0">
+        <div className="space-y-1.5">
+          <div className="h-2.5 w-full bg-slate-950/80 rounded-full overflow-hidden p-[1px] border border-teal-500/50 shadow-inner">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400 shadow-[0_0_12px_rgba(20,184,166,0.9)]"
-              style={{
-                animation: `teProgressAnim ${effectiveDuration}ms linear forwards`,
-              }}
+              className="h-full rounded-full bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400 shadow-[0_0_12px_rgba(20,184,166,0.9)] transition-all duration-75 ease-out"
+              style={{ width: `${Math.max(2, progress)}%` }}
             />
           </div>
-          <div className="flex items-center justify-between text-[10px] text-teal-300/80 font-medium px-1">
-            <span>Cargando plataforma segura</span>
-            <span>MINEDU / D.S. 018-2026</span>
+          <div className="flex items-center justify-between text-[11px] font-medium text-teal-300/90 px-1">
+            <span>Cargando plataforma segura...</span>
+            <span className="font-mono font-bold text-emerald-300">{Math.round(progress)}%</span>
           </div>
         </div>
 
